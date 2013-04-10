@@ -27,7 +27,7 @@ public class UpdateFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View myFragmentView = inflater.inflate(R.layout.fragment, container, false);
-        webView = new WebView(getActivity());
+        webView = (WebView)myFragmentView.findViewById(R.id.webView1);
         context = getActivity();
         return myFragmentView;
     }

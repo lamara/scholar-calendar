@@ -1,6 +1,11 @@
 package com.example.scholarscraper;
 
 
+import android.webkit.WebSettings;
+import android.os.SystemClock;
+import android.view.KeyEvent;
+import android.webkit.WebViewClient;
+import android.webkit.WebView;
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;
@@ -13,7 +18,6 @@ public class MainActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
     }
 
 

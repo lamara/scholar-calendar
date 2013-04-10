@@ -39,8 +39,8 @@ public class ScholarScraper
 
     private String username;
     private String password;
-    private String mainPageHTML;
-    private String assignmentPageHTML;
+    private String mainPageHtml;
+    private String assignmentPageHtml;
     private Context context;
     private Map<String, String> casCookies;
     private List<Course> courses;
@@ -51,6 +51,7 @@ public class ScholarScraper
 
     private final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0";
     private final String LOGIN_PAGE = "https://auth.vt.edu/login?service=https%3A%2F%2Fscholar.vt.edu%2Fsakai-login-tool%2Fcontainer";
+    private final String MAIN_PAGE = "https://scholar.vt.edu/portal";
     private final String GET_HTML = "javascript:window.HTMLOUT.showHTML('<head>'+document.getElementsByTagName('html')[0].innerHTML+'</head>');";
     protected static final int ACTION_DOWN = 0;
     protected static final int KEYCODE_ENTER = 66;
@@ -70,7 +71,7 @@ public class ScholarScraper
         this.password = password;
         this.context = context;
         this.webView = webView;
-        this.mainPageHTML = null;
+        this.mainPageHtml = null;
         this.mainPageLoaded = false;
         this.listener = listener;
         courses = new ArrayList<Course>();
@@ -92,21 +93,34 @@ public class ScholarScraper
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
-
+                webView.setWebViewClient(new WebViewClient() {
+                    @Override
+                    public void onPageFinished(WebView view1, String url1) {
+                        System.out.println("retrieving main page html");
+                        mainPageHtml = getHtml();
+                        mainPageLoaded = true;
+                        System.out.println(mainPageHtml);
+                        clearOnPageFinished();
+                        listener.mainPageLoaded();
+                    }
+                });
+                /* calls 2nd nested onPageFinished when completed, unless
+                 * the main page is already loaded */
+                if (webView.getUrl().equals(MAIN_PAGE)) {
+                    mainPageHtml = getHtml();
+                    mainPageLoaded = true;
+                    System.out.println(mainPageHtml);
+                    clearOnPageFinished();
+                    listener.mainPageLoaded();
+                    return;
+                }
                 webView.loadUrl("javascript:document.getElementById('username').value = '" + username
-                    + "';document.getElementById('password').value='"+ password +"';");
-                webView.dispatchKeyEvent(new KeyEvent(ACTION_DOWN, KEYCODE_ENTER));
-                webView.loadUrl(GET_HTML);
-                SystemClock.sleep(2000); //executing javascript doesn't happen immediately
-                /* could cause errors */ //and there isn't a good way to account for that
-                                         //other than sleeping (still bad).
-                mainPageHTML = jsInstance.html;
-                mainPageLoaded = true;
-                System.out.println(mainPageHTML);
-                listener.mainPageLoaded();
+                    + "';document.getElementById('password').value='"+ password +"';"
+                    + "document.getElementsByName('submit')[0].click();");
+                System.out.println("main page loading");
             }
         });
-        webView.loadUrl(LOGIN_PAGE); //async, calls onPageFinished when done
+        webView.loadUrl(LOGIN_PAGE); //async, calls 1st nested onPageFinished when done
     }
 
     /**
@@ -130,15 +144,19 @@ public class ScholarScraper
      * @throws IOException
      */
     public void retrieveCourses(String semester) throws WrongLoginException, IOException {
-        if (mainPageHTML == null) {
+        if (mainPageHtml == null) {
             throw new NullPointerException("Main page's HTML has not been retrieved yet");
         }
         System.out.println("executing main page parsing/course retrieval");
-        Document mainPage = Jsoup.parse(mainPageHTML);
+        Document mainPage = Jsoup.parse(mainPageHtml);
         String[] htmls = retrieveSemesterHtmls(mainPage, "Spring 2013");
+        if (htmls.length == 0) {
+            System.out.println("no classes found");
+        }
         for (int i = 0; i < htmls.length; i++) {
             parseCourseHtml(htmls[i]);
         }
+        webView.clearCache(true);
         listener.coursesLoaded();
     }
     public void parseCourseHtml(String html) {
@@ -151,6 +169,7 @@ public class ScholarScraper
         Element classInfo = classDoc.select("a").first();
         className = classInfo.attr("title");
         rootUrl = classInfo.attr("href");
+
 
         course = new Course(className, rootUrl);
         courses.add(course);
@@ -199,6 +218,31 @@ public class ScholarScraper
         return links.toArray(new String[links.size()]);
     }
 
+    /**
+     * Useful for resetting the webview's onPageFinished method
+     */
+    private void clearOnPageFinished() {
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                //empty
+            }
+        });
+    }
+
+    // ----------------------------------------------------------
+    /**
+     * Gets the Html of the web view's current page
+     * @return Html of the web view's current page
+     */
+    public String getHtml() {
+        webView.loadUrl(GET_HTML);
+        SystemClock.sleep(1000); //executing javascript doesn't happen immediately
+        /* could cause errors */ //and there isn't a good way to account for that
+                                 //other than sleeping (still bad).
+        String pageHtml = jsInstance.html;
+        return pageHtml;
+    }
 
     /**
      * Returns the internal list of courses
