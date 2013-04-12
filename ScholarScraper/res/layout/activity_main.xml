@@ -5,23 +5,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity" >
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:text="@string/hello_world" />
-
-    <WebView
-        android:id="@+id/webView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/textView1"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="56dp"
-        android:visibility="visible" />
-
     <fragment
         android:id="@+id/fragment1"
         android:name="com.example.scholarscraper.UpdateFragment"
@@ -29,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/textView1"
+        android:layout_centerVertical="true"
         android:layout_marginTop="76dp" />
 
 </RelativeLayout>

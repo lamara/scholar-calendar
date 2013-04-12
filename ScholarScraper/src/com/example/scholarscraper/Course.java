@@ -18,9 +18,9 @@ import java.util.ArrayList;
 public class Course
 {
     private final String name;
-    private final String mainURL;
-    private String assignmentURL;
-    private String quizURL;
+    private final String mainUrl;
+    private String assignmentUrl;
+    private String quizUrl;
     private boolean hasLoaded;
 
     private List<Object> assignments;
@@ -32,9 +32,9 @@ public class Course
      */
     public Course(String name, String mainURL) {
         this.name = name;
-        this.mainURL = mainURL;
-        this.setAssignmentURL(null);
-        this.setQuizURL(null);
+        this.mainUrl = mainURL;
+        this.setAssignmentUrl(null);
+        this.setQuizUrl(null);
 
         hasLoaded = false;
 
@@ -47,11 +47,11 @@ public class Course
      * @param aURL
      * @param qURL
      */
-    public Course (String name, String mainURL, String aURL, String qURL) {
+    public Course (String name, String mainUrl, String aUrl, String qUrl) {
         this.name = name;
-        this.mainURL = mainURL;
-        this.setAssignmentURL(aURL);
-        this.setQuizURL(qURL);
+        this.mainUrl = mainUrl;
+        this.setAssignmentUrl(aUrl);
+        this.setQuizUrl(qUrl);
 
         hasLoaded = true;
     }
@@ -66,41 +66,41 @@ public class Course
     /**
      * @return the mainURL
      */
-    public String getMainURL()
+    public String getMainUrl()
     {
-        return mainURL;
+        return mainUrl;
     }
     // ----------------------------------------------------------
     /**
      * @return the assignmentURL
      */
-    public String getAssignmentURL()
+    public String getAssignmentUrl()
     {
-        return assignmentURL;
+        return assignmentUrl;
     }
     // ----------------------------------------------------------
     /**
-     * @param assignmentURL the assignmentURL to set
+     * @param assignmentUrl the assignmentUrl to set
      */
-    public void setAssignmentURL(String assignmentURL)
+    public void setAssignmentUrl(String assignmentUrl)
     {
-        this.assignmentURL = assignmentURL;
+        this.assignmentUrl = assignmentUrl;
     }
     // ----------------------------------------------------------
     /**
      * @return the quizURL
      */
-    public String getQuizURL()
+    public String getQuizUrl()
     {
-        return quizURL;
+        return quizUrl;
     }
     // ----------------------------------------------------------
     /**
      * @param quizURL the quizURL to set
      */
-    public void setQuizURL(String quizURL)
+    public void setQuizUrl(String quizUrl)
     {
-        this.quizURL = quizURL;
+        this.quizUrl = quizUrl;
     }
     /**
      * Sees if the classes assignment or quiz URLs have been searched for yet

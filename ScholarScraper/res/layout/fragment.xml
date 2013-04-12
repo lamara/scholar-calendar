@@ -8,9 +8,33 @@
        android:layout_height="wrap_content"
        android:text="Update Fragment" />
 
+   <EditText
+       android:id="@+id/username"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:ems="10" >
+
+       <requestFocus />
+   </EditText>
+
+   <EditText
+       android:id="@+id/password"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:ems="10"
+       android:inputType="textPassword" />
+
+   <Button
+       android:id="@+id/launch"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:text="Launch" />
+
    <WebView
        android:id="@+id/webView1"
        android:layout_width="match_parent"
-       android:layout_height="match_parent" />
+       android:layout_height="match_parent"
+       android:visibility="invisible"
+       android:onClick = "onLaunch" />
 
 </LinearLayout>

@@ -149,7 +149,7 @@ public class ScholarScraper
         }
         System.out.println("executing main page parsing/course retrieval");
         Document mainPage = Jsoup.parse(mainPageHtml);
-        String[] htmls = retrieveSemesterHtmls(mainPage, "Spring 2013");
+        String[] htmls = retrieveCourseHtmls(mainPage, "Spring 2013");
         if (htmls.length == 0) {
             System.out.println("no classes found");
         }
@@ -182,7 +182,7 @@ public class ScholarScraper
      * @return links to course pages underneath Spring 2013
      * @throws IOException
      */
-    private static String[] retrieveSemesterHtmls(Document mainPage, String semester)
+    private static String[] retrieveCourseHtmls(Document mainPage, String semester)
         throws IOException
     {
         System.out.println("executing semester html retrieval");
@@ -218,6 +218,51 @@ public class ScholarScraper
         return links.toArray(new String[links.size()]);
     }
 
+
+    /**
+     * Finds and loads a courses assignment Htmls into the given course object
+     */
+    public void retrieveAssignmentPages(Course course) {
+        if (course.getMainUrl() == null) {
+            System.out.println(course + " has no main page HTML");
+            return;
+        }
+        loadCourseMainPage(course.getMainUrl());
+
+    }
+
+    /**
+     *
+     */
+    private void loadCourseMainPage(String url) {
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                String html = getHtml();
+                Document courseMain = Jsoup.parse(html);
+                System.out.println(courseMain);
+                Element assignmentHtml = courseMain.select("a[class*=assignment]").first();
+                String assignmentUrl = assignmentHtml.attr("href");
+                System.out.println("success: " + assignmentUrl);
+
+            }
+        });
+        webView.loadUrl(url);
+    }
+    /**
+     * There are actually two assignment pages, one is the full page body
+     * and the second is a portlet window on the page loaded through AJAX.
+     * This finds the portlet window's HTML (and once we have this, we don't
+     * need to deal with AJAX anymore, so we can stop connecting to scholar
+     * clunkily through the webview (this is a very good thing))
+     */
+    private void loadAssignmentUrl(String url) {
+
+    }
+    private void loadQuizUrl(String url) {
+
+    }
+
     /**
      * Useful for resetting the webview's onPageFinished method
      */
@@ -225,7 +270,7 @@ public class ScholarScraper
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
-                //empty
+                //Empty method body
             }
         });
     }
@@ -237,7 +282,7 @@ public class ScholarScraper
      */
     public String getHtml() {
         webView.loadUrl(GET_HTML);
-        SystemClock.sleep(1000); //executing javascript doesn't happen immediately
+        SystemClock.sleep(1500); //executing javascript doesn't happen immediately
         /* could cause errors */ //and there isn't a good way to account for that
                                  //other than sleeping (still bad).
         String pageHtml = jsInstance.html;
