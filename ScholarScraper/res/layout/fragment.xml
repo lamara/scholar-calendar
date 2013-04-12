@@ -30,6 +30,13 @@
        android:layout_height="wrap_content"
        android:text="Launch" />
 
+   <EditText
+       android:id="@+id/textField"
+       android:layout_width="match_parent"
+       android:layout_height="192dp"
+       android:ems="10"
+       android:inputType="textMultiLine" />
+
    <WebView
        android:id="@+id/webView1"
        android:layout_width="match_parent"

@@ -1,5 +1,6 @@
 package com.example.scholarscraper;
 
+import android.widget.TextView;
 import android.widget.Button;
 import android.widget.EditText;
 import java.util.List;
@@ -30,6 +31,7 @@ public class UpdateFragment extends Fragment {
     EditText passwordEdit;
     String username;
     String password;
+    TextView textField;
     Button launch;
 
     @Override
@@ -38,6 +40,7 @@ public class UpdateFragment extends Fragment {
         webView = (WebView)myFragmentView.findViewById(R.id.webView1);
         usernameEdit = (EditText) myFragmentView.findViewById(R.id.username);
         passwordEdit = (EditText) myFragmentView.findViewById(R.id.password);
+        textField = (TextView) myFragmentView.findViewById(R.id.textField);
         launch = (Button) myFragmentView.findViewById(R.id.launch);
         launch.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -91,9 +94,12 @@ public class UpdateFragment extends Fragment {
         }
         public void coursesLoaded() {
             List<Course> courses = scraperInstance.getCourses();
+            String courseString = "";
             for (Course course : courses) {
+                courseString += course.toString() + "\n";
                 System.out.println(course);
             }
+            textField.setText(courseString);
             //scraperInstance.retrieveAssignmentPages(courses.get(0));
         }
     }
