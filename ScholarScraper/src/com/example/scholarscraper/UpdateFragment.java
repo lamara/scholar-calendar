@@ -29,10 +29,13 @@ public class UpdateFragment extends Fragment {
     ScholarScraper scraperInstance;
     EditText usernameEdit;
     EditText passwordEdit;
-    String username;
-    String password;
     TextView textField;
     Button launch;
+
+    /* index is used for keeping track of which courses are to be processed
+     * during the update process */
+    private int index;
+    private List<Course> courses;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -42,10 +45,15 @@ public class UpdateFragment extends Fragment {
         passwordEdit = (EditText) myFragmentView.findViewById(R.id.password);
         textField = (TextView) myFragmentView.findViewById(R.id.textField);
         launch = (Button) myFragmentView.findViewById(R.id.launch);
+
+        index = 0;
+        courses = null;
+
         launch.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                username = usernameEdit.getText().toString();
-                password = passwordEdit.getText().toString();
+                launch.setEnabled(false);
+                String username = usernameEdit.getText().toString();
+                String password = passwordEdit.getText().toString();
                 try
                 {
                     scraperInstance = new ScholarScraper(username, password, null,
@@ -67,19 +75,8 @@ public class UpdateFragment extends Fragment {
         return myFragmentView;
     }
 
-    @Override
-    public void onStart() {
-            /* usernames and passwords will be handled externally, but in the
-             * meantime they need to be entered manually here */
-            super.onStart();
-    }
-
-    public void onLaunch() {
-
-    }
-
-
     public class PageLoadListener {
+
         public void mainPageLoaded() {
             try {
                 scraperInstance.retrieveCourses("Spring 2013");
@@ -93,14 +90,34 @@ public class UpdateFragment extends Fragment {
             }
         }
         public void coursesLoaded() {
-            List<Course> courses = scraperInstance.getCourses();
+            courses = scraperInstance.getCourses();
             String courseString = "";
             for (Course course : courses) {
                 courseString += course.toString() + "\n";
                 System.out.println(course);
             }
             textField.setText(courseString);
-            //scraperInstance.retrieveAssignmentPages(courses.get(0));
+            retrieveCourseLinks();
+        }
+        public void retrieveCourseLinks() {
+            if (courses == null) {
+                System.out.println("Courses not loaded yet");
+            }
+            if (index < courses.size()) {
+
+                Course course = courses.get(index);
+                System.out.println("loading: " + course);
+                scraperInstance.retrieveAssignmentPages(course);
+                index++;
+            }
+            else {
+                for (Course course : courses) {
+                    System.out.println(course + ": ");
+                    System.out.println("main: " + course.getMainUrl());
+                    System.out.println("assign: " + course.getAssignmentUrl());
+                    System.out.println("quiz: " + course.getQuizUrl());
+                }
+            }
         }
     }
 }

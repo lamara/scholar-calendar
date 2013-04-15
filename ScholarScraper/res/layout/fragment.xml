@@ -6,7 +6,13 @@
    <TextView
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
-       android:text="Update Fragment" />
+       android:text="Update Fragment: Enter a valid Scholar username and password" />
+
+   <Button
+       android:id="@+id/launch"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:text="Launch" />
 
    <EditText
        android:id="@+id/username"
@@ -24,24 +30,16 @@
        android:ems="10"
        android:inputType="textPassword" />
 
-   <Button
-       android:id="@+id/launch"
-       android:layout_width="match_parent"
-       android:layout_height="wrap_content"
-       android:text="Launch" />
-
-   <EditText
+   <TextView
        android:id="@+id/textField"
-       android:layout_width="match_parent"
-       android:layout_height="192dp"
-       android:ems="10"
-       android:inputType="textMultiLine" />
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:text="Classes:" />
 
    <WebView
        android:id="@+id/webView1"
        android:layout_width="match_parent"
        android:layout_height="match_parent"
-       android:visibility="invisible"
        android:onClick = "onLaunch" />
 
 </LinearLayout>

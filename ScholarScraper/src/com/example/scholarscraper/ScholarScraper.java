@@ -86,7 +86,7 @@ public class ScholarScraper
      * Logs into the Scholar main page while keeping a reference to its HTML data
      * This method is partly asynchronous, but will still hang the main thread
      * for a few seconds. An event is dispatched on retrieval of the HTML data
-     * to the class's listener.
+     * to the class's listener so the update process can continue.
      */
     private void loadMainPage() {
         /* handles logging into the Scholar main page */
@@ -136,10 +136,16 @@ public class ScholarScraper
         webView.addJavascriptInterface(jsInstance, "HTMLOUT");
     }
 
+
+
+
+    //-------------------------------------------------------------------------
     /**
      * Parses the scholar main page for course information.
-     * Returns a class list for the specified semester based on data from the
-     * main page.
+     * Loads a class list for the specified semester based on data from the
+     * main page, and then notifies the update listener to continue the update
+     * process.
+     *
      * @throws WrongLoginException
      * @throws IOException
      */
@@ -158,21 +164,6 @@ public class ScholarScraper
         }
         webView.clearCache(true);
         listener.coursesLoaded();
-    }
-    public void parseCourseHtml(String html) {
-        String className;
-        String rootUrl; //reference to the main url of the specific class page
-        Course course;
-
-        Document classDoc = Jsoup.parse(html);
-
-        Element classInfo = classDoc.select("a").first();
-        className = classInfo.attr("title");
-        rootUrl = classInfo.attr("href");
-
-
-        course = new Course(className, rootUrl);
-        courses.add(course);
     }
 
     /**
@@ -218,50 +209,148 @@ public class ScholarScraper
         return links.toArray(new String[links.size()]);
     }
 
-
     /**
-     * Finds and loads a courses assignment Htmls into the given course object
+     * Gets course info from a single line of Html retrieved from the
+     * retrieveCourseHtmls() method.
+     */
+    private void parseCourseHtml(String html) {
+        String className;
+        String rootUrl;
+        Course course;
+
+        Document classDoc = Jsoup.parse(html);
+
+        Element classInfo = classDoc.select("a").first();
+        className = classInfo.attr("title");
+        rootUrl = classInfo.attr("href");
+
+
+        course = new Course(className, rootUrl);
+        courses.add(course);
+    }
+    //-------------------------------------------------------------------------
+
+
+
+
+    //-------------------------------------------------------------------------
+    /**
+     * Finds and loads a courses assignment and quiz urls into the given course object.
+     * The line of methods that this calls will execute a number of url loads
+     * by the webview, which can take a while. This method should only be called
+     * by the listener class in the UpdateFragment, as the listener handles
+     * chaining these method calls so every course in the courselist gets their
+     * assignment and quiz urls loaded.
      */
     public void retrieveAssignmentPages(Course course) {
         if (course.getMainUrl() == null) {
             System.out.println(course + " has no main page HTML");
             return;
         }
-        loadCourseMainPage(course.getMainUrl());
-
+        loadCourseMainPage(course);
     }
 
     /**
-     *
+     * Handles parsing of the course's main page, retrieves both the main assignment and
+     * the main quiz urls, if present, and then executes the method used to retrieve the
+     * assignment url's portlet url (the portlet url holds the data we want).
      */
-    private void loadCourseMainPage(String url) {
+    private void loadCourseMainPage(final Course course) {
+        String url = course.getMainUrl();
         webView.setWebViewClient(new WebViewClient() {
             @Override
-            public void onPageFinished(WebView view, String url) {
+            public void onPageFinished(WebView view, String url2) {
                 String html = getHtml();
                 Document courseMain = Jsoup.parse(html);
-                System.out.println(courseMain);
-                Element assignmentHtml = courseMain.select("a[class*=assignment]").first();
-                String assignmentUrl = assignmentHtml.attr("href");
-                System.out.println("success: " + assignmentUrl);
 
+                /* assignment or quiz pages often don't exist for a course, we indicate that
+                 * with a null pointer */
+                String assignmentUrl;
+                Element assignmentHtml = courseMain.select("a[class*=assignment]").first();
+                assignmentUrl = (assignmentHtml != null) ? assignmentHtml.attr("href") : null;
+
+                String quizUrl;
+                Element quizHtml = courseMain.select("a[class*=samigo]").first();
+                quizUrl = (quizHtml != null) ? quizHtml.attr("href") : null;
+
+                retrieveAssignmentUrls(assignmentUrl, quizUrl, course);
             }
         });
         webView.loadUrl(url);
     }
+
     /**
-     * There are actually two assignment pages, one is the full page body
-     * and the second is a portlet window on the page loaded through AJAX.
-     * This finds the portlet window's HTML (and once we have this, we don't
+     * There are actually two assignment and two quiz pages, one is the full page body
+     * and the second is a portlet window on the page, which is loaded through AJAX.
+     * This finds the portlet window's HTML, which is the only window that
+     * holds the data that we need (and once we have this, we don't
      * need to deal with AJAX anymore, so we can stop connecting to scholar
-     * clunkily through the webview (this is a very good thing))
+     * clunkily through the webview).
      */
-    private void loadAssignmentUrl(String url) {
+    private void retrieveAssignmentUrls(final String assignmentUrl, final String quizUrl,
+                                    final Course course) {
 
-    }
-    private void loadQuizUrl(String url) {
+        if (assignmentUrl == null) {
+            course.setAssignmentUrl(null);
+            loadQuizUrl(quizUrl, course);
+            return;
+        }
+        /* retrieves the assignment's portlet url from the assignment main page,
+         * and then executes the method to retrieve the quiz's portlet url from the
+         * quiz main page */
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                String html = getHtml();
+                Document assignmentPage = Jsoup.parse(html);
+                Element assignmentHtml = assignmentPage.select("div[class*=title] > a").first();
+                String portletUrl = assignmentHtml.attr("href");
 
+                System.out.println("assignment page:");
+                System.out.println("success: " + portletUrl);
+
+                course.setAssignmentUrl(portletUrl);
+                loadQuizUrl(quizUrl, course);
+            }
+        });
+        webView.loadUrl(assignmentUrl);
     }
+
+    /**
+     * Retrieves the quiz's portlet url and loads it into its corresponding
+     * course object. Once finished, the method signifies the listener to move
+     * on to the next course in the courselist.
+     */
+    private void loadQuizUrl(final String quizUrl, final Course course) {
+        if (quizUrl == null) {
+            course.setQuizUrl(null);
+            System.out.println(course + " loaded");
+            listener.retrieveCourseLinks();
+            return;
+        }
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                String html = getHtml();
+                System.out.println("quiz page:");
+                Document quizPage = Jsoup.parse(html);
+                Element quizHtml = quizPage.select("div[class*=title] > a").first();
+                String portletUrl = quizHtml.attr("href");
+
+                System.out.println("quiz page:");
+                System.out.println("success: " + portletUrl);
+
+                course.setQuizUrl(portletUrl);
+                System.out.println(course + " loaded");
+                listener.retrieveCourseLinks();
+
+            }
+        });
+        webView.loadUrl(quizUrl);
+    }
+    //-------------------------------------------------------------------------
+
+
 
     /**
      * Useful for resetting the webview's onPageFinished method
@@ -275,7 +364,6 @@ public class ScholarScraper
         });
     }
 
-    // ----------------------------------------------------------
     /**
      * Gets the Html of the web view's current page
      * @return Html of the web view's current page
