@@ -20,13 +20,17 @@ import android.view.LayoutInflater;
  *  The update fragment executes the course loading process
  *
  *  @author Alex Lamar
- *  @version Apr 9, 2013
+ *  @author Paul Yea
+ *  @author Brianna Beitzel
+ *  @version Apr 15, 2013
  */
 public class UpdateFragment extends Fragment {
 
     WebView webView;
     Context context;
     ScholarScraper scraperInstance;
+    String username;
+    String password;
     EditText usernameEdit;
     EditText passwordEdit;
     TextView textField;
@@ -52,8 +56,8 @@ public class UpdateFragment extends Fragment {
         launch.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 launch.setEnabled(false);
-                String username = usernameEdit.getText().toString();
-                String password = passwordEdit.getText().toString();
+                username = usernameEdit.getText().toString();
+                password = passwordEdit.getText().toString();
                 try
                 {
                     scraperInstance = new ScholarScraper(username, password, null,
@@ -75,6 +79,12 @@ public class UpdateFragment extends Fragment {
         return myFragmentView;
     }
 
+    /**
+     * Used as a listener to process the onPagedFinished callbacks in the
+     * ScholarScraper class. This is necessary to keep the main thread from
+     * hanging for too long, and is useful for organizing the update process
+     * as a whole.
+     */
     public class PageLoadListener {
 
         public void mainPageLoaded() {
@@ -111,13 +121,11 @@ public class UpdateFragment extends Fragment {
                 index++;
             }
             else {
-                for (Course course : courses) {
-                    System.out.println(course + ": ");
-                    System.out.println("main: " + course.getMainUrl());
-                    System.out.println("assign: " + course.getAssignmentUrl());
-                    System.out.println("quiz: " + course.getQuizUrl());
-                }
+                retrieveAssignments(courses);
             }
+        }
+        public void retrieveAssignments(List<Course> courses) {
+            new ScholarScraper.AssignmentRetriever().execute(courses, username, password);
         }
     }
 }

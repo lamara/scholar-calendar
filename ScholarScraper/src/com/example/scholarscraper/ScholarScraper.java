@@ -1,5 +1,7 @@
 package com.example.scholarscraper;
 
+import java.util.Map.Entry;
+import org.jsoup.Connection;
 import java.util.List;
 import org.jsoup.nodes.Element;
 import com.example.scholarscraper.UpdateFragment.PageLoadListener;
@@ -27,9 +29,16 @@ import android.webkit.WebView;
 /**
  *  A Scholar web scraper used to retrieve courses and course
  *  assignments/information from scholar.
+ *  Spits out a bunch of stuff to logcat so we can easily track the status of
+ *  the update process.
+ *  Logging out isn't handled yet so if you try to run the app multiple times
+ *  without physically pressing the logout button on the webview before closing the app
+ *  then the web scraper will break horribly.
  *
  *  @author Alex Lamar
- *  @version Apr 6, 2013
+ *  @author Paul Yea
+ *  @author Brianna Beitzel
+ *  @version Apr 15, 2013
  */
 
 public class ScholarScraper
@@ -77,16 +86,17 @@ public class ScholarScraper
         courses = new ArrayList<Course>();
         this.jsInstance = new JavaScriptHtmlParser();
 
-        initalizeWebView(); //loads webview, as well as loading the main page
-        loadMainPage();     //html into the mainPageHTML field
+        initalizeWebView();
+        loadMainPage();
     }
 
 
     /**
      * Logs into the Scholar main page while keeping a reference to its HTML data
-     * This method is partly asynchronous, but will still hang the main thread
-     * for a few seconds. An event is dispatched on retrieval of the HTML data
-     * to the class's listener so the update process can continue.
+     * This method is partly asynchronous, but the update process can't continue
+     * until the asnyc portion is fully completed.
+     * An event is dispatched after retrieval of the main page's HTML data to
+     * the class's listener so the update process can continue.
      */
     private void loadMainPage() {
         /* handles logging into the Scholar main page */
@@ -97,15 +107,15 @@ public class ScholarScraper
                     @Override
                     public void onPageFinished(WebView view1, String url1) {
                         System.out.println("retrieving main page html");
-                        mainPageHtml = getHtml();
+                        mainPageHtml = getHtml(); //getHtml() sleeps for 1500 ms
                         mainPageLoaded = true;
                         System.out.println(mainPageHtml);
                         clearOnPageFinished();
                         listener.mainPageLoaded();
                     }
                 });
-                /* calls 2nd nested onPageFinished when completed, unless
-                 * the main page is already loaded */
+                /* calls 2nd nested onPageFinished when completed (the one just above
+                 * this line), unless the main page is already loaded */
                 if (webView.getUrl().equals(MAIN_PAGE)) {
                     mainPageHtml = getHtml();
                     mainPageLoaded = true;
@@ -265,6 +275,7 @@ public class ScholarScraper
 
                 /* assignment or quiz pages often don't exist for a course, we indicate that
                  * with a null pointer */
+
                 String assignmentUrl;
                 Element assignmentHtml = courseMain.select("a[class*=assignment]").first();
                 assignmentUrl = (assignmentHtml != null) ? assignmentHtml.attr("href") : null;
@@ -273,6 +284,7 @@ public class ScholarScraper
                 Element quizHtml = courseMain.select("a[class*=samigo]").first();
                 quizUrl = (quizHtml != null) ? quizHtml.attr("href") : null;
 
+                clearOnPageFinished();
                 retrieveAssignmentUrls(assignmentUrl, quizUrl, course);
             }
         });
@@ -310,6 +322,8 @@ public class ScholarScraper
                 System.out.println("success: " + portletUrl);
 
                 course.setAssignmentUrl(portletUrl);
+
+                clearOnPageFinished();
                 loadQuizUrl(quizUrl, course);
             }
         });
@@ -342,6 +356,8 @@ public class ScholarScraper
 
                 course.setQuizUrl(portletUrl);
                 System.out.println(course + " loaded");
+
+                clearOnPageFinished();
                 listener.retrieveCourseLinks();
 
             }
@@ -386,6 +402,183 @@ public class ScholarScraper
 
 
 
+
+    // -------------------------------------------------------------------------
+    /**
+     *  Operates on a list of courses. A course's assignments are loaded into
+     *  the course's internal assignment list. This task can be run independent
+     *  of a webview on the condition that a course's assignment and quiz portlet
+     *  Urls have already been found (which is where the webview portion of the
+     *  scholar scraper comes in)
+     *
+     *  @author Alex Lamar
+     *  @version Apr 15, 2013
+     */
+    public static class AssignmentRetriever extends AsyncTask<Object, Void, Void> {
+
+        Map<String, String> casCookies;
+
+        @Override
+        protected void onPreExecute() {
+            System.out.println("starting assignment retrieval");
+            casCookies = null;
+        }
+
+        @Override
+        protected Void doInBackground(Object... params)
+        {
+            List<Course> courses = (ArrayList<Course>) params[0];
+            String username = (String) params[1];
+            String password = (String) params[2];
+            try
+            {
+                Cas cas = new Cas(username.toCharArray(), password.toCharArray());
+                casCookies = cas.getCookies();
+                System.out.println("CAS loaded");
+                for (Course course : courses) {
+                    if (course.getAssignmentUrl() != null) {
+                        parseAssignmentPage(course);
+                    }
+                    if (course.getQuizUrl() != null) {
+                        parseQuizPage(course);
+                    }
+                }
+            }
+            catch (WrongLoginException e)
+            {
+                System.out.println("Invalid username/password");
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            System.out.println("Update finished");
+        }
+
+        // ----------------------------------------------------------
+        /**
+         * Place a description of your method here.
+         * @param course
+         */
+        public void parseAssignmentPage(Course course) {
+            System.out.println("parsing assignments" + course.toString());
+            String assignmentUrl = course.getAssignmentUrl();
+            Connection connection = Jsoup.connect(assignmentUrl);
+            loadCookies(connection, casCookies);
+            try
+            {
+                Document assignmentPage = connection.execute().parse();
+                System.out.println(course.toString() + " document retrieved");
+
+                Elements titles = assignmentPage.select("td[headers=title] > h4 > a");
+                Elements openDates = assignmentPage.select("td[headers=openDate]");
+                Elements dueDates = assignmentPage.select("td[headers=dueDate]");
+                Elements statuses = assignmentPage.select("td[headers=status]");
+
+                System.out.println("Title size: " + titles.size());
+                System.out.println("Open Date size: " + openDates.size());
+                System.out.println("Due Date size: " + dueDates.size());
+                System.out.println("Status size: " + statuses.size());
+
+                try {
+                    for (int i = 0; i < titles.size(); i++) {
+                        String title = titles.get(i).text();
+                        String openDate = openDates.get(i).text();
+                        String dueDate = dueDates.get(i).text();
+                        String status = statuses.get(i).text();
+
+                        System.out.println("Title: " + title);
+                        System.out.println("Open Date: " + openDate);
+                        System.out.println("Due Date: " + dueDate);
+                        System.out.println("Status: " + status);
+
+                        Assignment assignment = new Assignment(title, status, openDate, dueDate);
+                        course.addAssignment(assignment);
+                    }
+                }
+                catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("error retrieving assignment data");
+                    e.printStackTrace();
+                }
+            }
+            catch (IOException e)
+            {
+                System.out.println("assignment page IO exception");
+                e.printStackTrace();
+            }
+        }
+
+        // ----------------------------------------------------------
+        /**
+         * Place a description of your method here.
+         * @param course
+         */
+        public void parseQuizPage(Course course) {
+            System.out.println("parsing quizes for " + course.toString());
+            String quizUrl = course.getQuizUrl();
+            Connection connection = Jsoup.connect(quizUrl);
+            loadCookies(connection, casCookies);
+            Document quizPage;
+            try
+            {
+                quizPage = connection.execute().parse();
+
+                System.out.println("quiz document retrieved");
+
+                Element quizElement = quizPage.select("div[class=tier2]").first();
+                Elements data = quizElement.select("td");
+
+                System.out.println("Data size: " + data.size());
+
+                /* data for each individual quiz comes in element groups of 3 */
+                for (int i = 0; i < data.size(); i = i + 3) {
+                    if (data.size() % 3 != 0) {
+                        System.out.println("uneven data sets");
+                        break;
+                    }
+                    String title = data.get(i).select("a").first().text();
+                    String status = "Quiz";
+                    String dueDate = data.get(i + 2).text();
+
+                    System.out.println(course + " quiz title: " + title);
+                    System.out.println(title + " due date: " + dueDate);
+
+                    Assignment quiz = new Assignment(title, status, "", dueDate);
+                    course.addAssignment(quiz);
+                }
+
+            }
+            catch (IOException e)
+            {
+                System.out.println("could not parse quiz page");
+                e.printStackTrace();
+            }
+        }
+
+        /**
+         * Loads all cookies from a given cookie hashmap into a Jsoup connection
+         * (generally used with loading CAS cookies into a Scholar connection) Must
+         * be called before executing the connection in order to log in successfully
+         *
+         * @param connection
+         *            A Jsoup connection
+         * @param cookies
+         *            The cookie hashmap that will be loaded
+         */
+        private static void loadCookies(
+            Connection connection,
+            Map<String, String> cookies)
+        {
+
+            for (Entry<String, String> cookie : cookies.entrySet())
+            {
+                connection.cookie(cookie.getKey(), cookie.getValue());
+            }
+        }
+
+    }
 
 
 

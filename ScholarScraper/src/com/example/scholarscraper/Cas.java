@@ -27,6 +27,7 @@ import org.jsoup.select.Elements;
  * active for them to work.
  *
  * @author Ethan Gaebel (egaebel)
+ * @auther Alex Lamar (updated, removed unnecessary portions)
  */
 public final class Cas
 {
@@ -505,12 +506,10 @@ public final class Cas
         try
         {
 
-            if (grabCertificate())
-            {
 
-                System.setProperty(
-                    "javax.net.ssl.trustStore",
-                    cert.getAbsolutePath());
+                //System.setProperty(
+                //    "javax.net.ssl.trustStore",
+                //    cert.getAbsolutePath());
 
                 // get three hidden fields, and cookies from initial Login Page
                 Response loginPageResp = Jsoup.connect(LOGIN).execute();
@@ -600,7 +599,6 @@ public final class Cas
                 refreshSession = false;
 
                 return true;
-            }
         }
         catch (SocketTimeoutException e)
         {

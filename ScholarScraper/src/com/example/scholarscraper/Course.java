@@ -12,6 +12,8 @@ import java.util.ArrayList;
  *  is done by outside mutator methods in the ScholarScraper class
  *
  *  @author Alex Lamar
+ *  @author Paul Yea
+ *  @author Brianna Beitzel
  *  @version Apr 8, 2013
  */
 
@@ -23,7 +25,8 @@ public class Course
     private String quizUrl;
     private boolean hasLoaded;
 
-    private List<Object> assignments;
+    private List<Assignment> assignments;
+
 
     /**
      * Create a new Class object.
@@ -38,7 +41,7 @@ public class Course
 
         hasLoaded = false;
 
-        assignments = new ArrayList<Object>();
+        assignments = new ArrayList<Assignment>();
     }
     /**
      * Create a new Class object.
@@ -122,6 +125,12 @@ public class Course
      */
     public String toString() {
         return name;
+    }
+    /**
+     * adds an assignment to the internal assignment list
+     */
+    public void addAssignment(Assignment assignment) {
+        assignments.add(assignment);
     }
 
 }
