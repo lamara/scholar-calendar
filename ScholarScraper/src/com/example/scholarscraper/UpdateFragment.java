@@ -40,6 +40,7 @@ public class UpdateFragment extends Fragment {
      * during the update process */
     private int index;
     private List<Course> courses;
+    private PageLoadListener listener;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -49,6 +50,7 @@ public class UpdateFragment extends Fragment {
         passwordEdit = (EditText) myFragmentView.findViewById(R.id.password);
         textField = (TextView) myFragmentView.findViewById(R.id.textField);
         launch = (Button) myFragmentView.findViewById(R.id.launch);
+        listener = new PageLoadListener();
 
         index = 0;
         courses = null;
@@ -61,7 +63,7 @@ public class UpdateFragment extends Fragment {
                 try
                 {
                     scraperInstance = new ScholarScraper(username, password, null,
-                                                        webView, new PageLoadListener());
+                                                        webView, listener);
                 }
                 catch (WrongLoginException e)
                 {
@@ -125,7 +127,12 @@ public class UpdateFragment extends Fragment {
             }
         }
         public void retrieveAssignments(List<Course> courses) {
-            new ScholarScraper.AssignmentRetriever().execute(courses, username, password);
+            new ScholarScraper.AssignmentRetriever().execute(courses, username, password,
+                                                             listener);
+        }
+        public void updateFinished() {
+            //do stuff on update finish, like saving the update fragment's courselist
+            System.out.println("updateFinished() called");
         }
     }
 }

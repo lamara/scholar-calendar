@@ -416,7 +416,8 @@ public class ScholarScraper
      */
     public static class AssignmentRetriever extends AsyncTask<Object, Void, Void> {
 
-        Map<String, String> casCookies;
+        private Map<String, String> casCookies;
+        private PageLoadListener listener;
 
         @Override
         protected void onPreExecute() {
@@ -430,6 +431,7 @@ public class ScholarScraper
             List<Course> courses = (ArrayList<Course>) params[0];
             String username = (String) params[1];
             String password = (String) params[2];
+            listener = (PageLoadListener) params[3];
             try
             {
                 Cas cas = new Cas(username.toCharArray(), password.toCharArray());
@@ -455,6 +457,7 @@ public class ScholarScraper
         @Override
         protected void onPostExecute(Void result) {
             System.out.println("Update finished");
+            listener.updateFinished();
         }
 
         // ----------------------------------------------------------
