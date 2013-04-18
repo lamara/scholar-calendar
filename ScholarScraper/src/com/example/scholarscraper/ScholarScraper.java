@@ -62,6 +62,7 @@ public class ScholarScraper
     private final String LOGIN_PAGE = "https://auth.vt.edu/login?service=https%3A%2F%2Fscholar.vt.edu%2Fsakai-login-tool%2Fcontainer";
     private final String MAIN_PAGE = "https://scholar.vt.edu/portal";
     private final String GET_HTML = "javascript:window.HTMLOUT.showHTML('<head>'+document.getElementsByTagName('html')[0].innerHTML+'</head>');";
+    private final String LOGOUT_PAGE = "https://scholar.vt.edu/portal/logout";
     protected static final int ACTION_DOWN = 0;
     protected static final int KEYCODE_ENTER = 66;
 
@@ -75,7 +76,7 @@ public class ScholarScraper
      * @throws WrongLoginException
      */
     public ScholarScraper(String username, String password, Context context, WebView webView,
-                          PageLoadListener listener) throws WrongLoginException, IOException {
+                          PageLoadListener listener) throws IOException, WrongLoginException {
         this.username = username;
         this.password = password;
         this.context = context;
@@ -88,6 +89,19 @@ public class ScholarScraper
 
         initalizeWebView();
         loadMainPage();
+    }
+
+    /**
+     * Use this constructor to skip the courselist update process. The courselist
+     * update is slow and resource heavy, but only needs to be run once per user,
+     * use this constructor after the user already has their courselist.
+     */
+    public ScholarScraper(String username, String password, Context context,
+                          PageLoadListener listener) {
+        this.username = username;
+        this.password = password;
+        this.context = context;
+        this.listener = listener;
     }
 
 
@@ -103,17 +117,6 @@ public class ScholarScraper
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
-                webView.setWebViewClient(new WebViewClient() {
-                    @Override
-                    public void onPageFinished(WebView view1, String url1) {
-                        System.out.println("retrieving main page html");
-                        mainPageHtml = getHtml(); //getHtml() sleeps for 1500 ms
-                        mainPageLoaded = true;
-                        System.out.println(mainPageHtml);
-                        clearOnPageFinished();
-                        listener.mainPageLoaded();
-                    }
-                });
                 /* calls 2nd nested onPageFinished when completed (the one just above
                  * this line), unless the main page is already loaded */
                 if (webView.getUrl().equals(MAIN_PAGE)) {
@@ -121,9 +124,30 @@ public class ScholarScraper
                     mainPageLoaded = true;
                     System.out.println(mainPageHtml);
                     clearOnPageFinished();
-                    listener.mainPageLoaded();
+                    listener.mainPageLoaded(true);
                     return;
                 }
+
+                webView.setWebViewClient(new WebViewClient() {
+                    @Override
+                    public void onPageFinished(WebView view1, String url1) {
+                        System.out.println("retrieving main page html");
+                        if (!webView.getUrl().equals(MAIN_PAGE)) {
+                            System.out.println("main page loaded unsucsesfully");
+                            listener.mainPageLoaded(false);
+                            return;
+                        }
+                        System.out.println("main page loaded unsucsesfully");
+                        listener.mainPageLoaded(false);
+                        mainPageHtml = getHtml(); //getHtml() sleeps for 1500 ms
+                        mainPageLoaded = true;
+                        System.out.println(mainPageHtml);
+                        clearOnPageFinished();
+
+                        System.out.println("main page loaded successfully");
+                        listener.mainPageLoaded(true);
+                    }
+                });
                 webView.loadUrl("javascript:document.getElementById('username').value = '" + username
                     + "';document.getElementById('password').value='"+ password +"';"
                     + "document.getElementsByName('submit')[0].click();");
@@ -364,9 +388,29 @@ public class ScholarScraper
         });
         webView.loadUrl(quizUrl);
     }
+
+
     //-------------------------------------------------------------------------
 
 
+
+    /**
+     * Checks if the login info given is valid.
+     * @return True if valid, false if invalid
+     */
+    public boolean checkLoginInfo() {
+        /* checks using a cas login instance, relatively inexpensive and is much
+         * simpler then messing with the web view */
+        Cas cas;
+        try {
+            cas = new Cas(username.toCharArray(), password.toCharArray());
+            cas.closeSession();
+        }
+        catch (WrongLoginException e) {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * Useful for resetting the webview's onPageFinished method
@@ -381,7 +425,18 @@ public class ScholarScraper
     }
 
     /**
-     * Gets the Html of the web view's current page
+     * Logs out of scholar page. Method is asynchronous, so do not call it and then
+     * immediately call another operation on the webview or else bad things
+     * may happen.
+     */
+    public void logout() {
+        clearOnPageFinished();
+        webView.loadUrl(LOGOUT_PAGE);
+    }
+
+    /**
+     * Gets the Html of the web view's current page. Will hang the thread for
+     * around 1.5 seconds.
      * @return Html of the web view's current page
      */
     public String getHtml() {
@@ -414,7 +469,7 @@ public class ScholarScraper
      *  @author Alex Lamar
      *  @version Apr 15, 2013
      */
-    public static class AssignmentRetriever extends AsyncTask<Object, Void, Void> {
+    public static class AssignmentRetriever extends AsyncTask<Object, Void, Boolean> {
 
         private Map<String, String> casCookies;
         private PageLoadListener listener;
@@ -426,12 +481,15 @@ public class ScholarScraper
         }
 
         @Override
-        protected Void doInBackground(Object... params)
+        protected Boolean doInBackground(Object... params)
         {
             List<Course> courses = (ArrayList<Course>) params[0];
             String username = (String) params[1];
             String password = (String) params[2];
             listener = (PageLoadListener) params[3];
+            if (courses == null) {
+                return false;
+            }
             try
             {
                 Cas cas = new Cas(username.toCharArray(), password.toCharArray());
@@ -445,19 +503,26 @@ public class ScholarScraper
                         parseQuizPage(course);
                     }
                 }
+                cas.closeSession();
             }
             catch (WrongLoginException e)
             {
                 System.out.println("Invalid username/password");
                 e.printStackTrace();
+                return false;
             }
-            return null;
+            return true;
         }
 
         @Override
-        protected void onPostExecute(Void result) {
-            System.out.println("Update finished");
-            listener.updateFinished();
+        protected void onPostExecute(Boolean result) {
+            if (result) {
+                System.out.println("Update finished");
+                listener.updateFinished();
+            }
+            else {
+                System.out.println("Update failed");
+            }
         }
 
         // ----------------------------------------------------------
@@ -491,11 +556,6 @@ public class ScholarScraper
                         String openDate = openDates.get(i).text();
                         String dueDate = dueDates.get(i).text();
                         String status = statuses.get(i).text();
-
-                        System.out.println("Title: " + title);
-                        System.out.println("Open Date: " + openDate);
-                        System.out.println("Due Date: " + dueDate);
-                        System.out.println("Status: " + status);
 
                         Assignment assignment = new Assignment(title, status, openDate, dueDate);
                         course.addAssignment(assignment);
@@ -544,9 +604,6 @@ public class ScholarScraper
                     String title = data.get(i).select("a").first().text();
                     String status = "Quiz";
                     String dueDate = data.get(i + 2).text();
-
-                    System.out.println(course + " quiz title: " + title);
-                    System.out.println(title + " due date: " + dueDate);
 
                     Assignment quiz = new Assignment(title, status, "", dueDate);
                     course.addAssignment(quiz);

@@ -127,10 +127,27 @@ public class Course
         return name;
     }
     /**
-     * adds an assignment to the internal assignment list
+     * Adds an assignment to the internal assignment list. Because assignments
+     * can possibly change in either status or due date, addAssignment will check
+     * if similar assignments (similar being two assignments that share the same name)
+     * have different due dates or status, and if so, will replace the old assignment
+     * with the new, updated assignment.
+     * @param assignment The assignment to add to the assignment list
      */
     public void addAssignment(Assignment assignment) {
+        boolean hasDuplicate = false;
+        for (int i = 0; i < assignments.size(); i++) {
+            Assignment cmpr = assignments.get(i);
+            if (cmpr.getName().equals(assignment.getName()) && !cmpr.equals(assignment)) {
+                assignments.set(i, assignment);
+                return;
+                }
+            else if (cmpr.equals(assignment)) {
+                return;
+            }
+        }
         assignments.add(assignment);
+        System.out.println(assignment.getName() + " added to " + this);
     }
 
 }

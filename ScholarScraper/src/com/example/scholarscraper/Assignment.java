@@ -1,5 +1,7 @@
 package com.example.scholarscraper;
 
+import java.util.Date;
+
 // -------------------------------------------------------------------------
 /**
  * Write a one-sentence summary of your class here. Follow it with additional
@@ -40,6 +42,19 @@ public class Assignment
         this.description = description;
         this.dateAssigned = dateAssigned;
         this.dateDue = dateDue;
+    }
+
+    /**
+     * Returns a Date object based on a String date of the
+     * format "Jan 31, 2013 1:45 pm"
+     */
+    @SuppressWarnings("deprecation")
+    private static Date parse(String date) {
+
+        new Date(4, 4, 4);
+
+        return null;
+
     }
 
 
@@ -140,5 +155,21 @@ public class Assignment
     public void setDateDue(String newTime)
     {
         dateDue = newTime;
+    }
+
+    /**
+     * Compares two assignment objects for equality
+     */
+    @Override
+    public boolean equals(Object assignment) {
+        if (assignment instanceof Assignment) {
+            Assignment cmpr = (Assignment) assignment;
+            if (this.getDateDue().equals(cmpr.getDateDue()) &&
+                this.getName().equals(cmpr.getName())      &&
+                this.getDescription().equals(cmpr.getDescription())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

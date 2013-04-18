@@ -35,6 +35,7 @@ public class UpdateFragment extends Fragment {
     EditText passwordEdit;
     TextView textField;
     Button launch;
+    Button assignment;
 
     /* index is used for keeping track of which courses are to be processed
      * during the update process */
@@ -50,6 +51,7 @@ public class UpdateFragment extends Fragment {
         passwordEdit = (EditText) myFragmentView.findViewById(R.id.password);
         textField = (TextView) myFragmentView.findViewById(R.id.textField);
         launch = (Button) myFragmentView.findViewById(R.id.launch);
+        assignment = (Button) myFragmentView.findViewById(R.id.assignment);
         listener = new PageLoadListener();
 
         index = 0;
@@ -62,17 +64,26 @@ public class UpdateFragment extends Fragment {
                 password = passwordEdit.getText().toString();
                 try
                 {
-                    scraperInstance = new ScholarScraper(username, password, null,
+                    scraperInstance = new ScholarScraper(username, password, getActivity(),
                                                         webView, listener);
                 }
                 catch (WrongLoginException e)
                 {
-                    e.printStackTrace();
+                    System.out.println("Wrong login credentials");
                 }
                 catch (IOException e)
                 {
                     e.printStackTrace();
                 }
+            }
+        });
+
+        assignment.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                assignment.setEnabled(false);
+                username = usernameEdit.getText().toString();
+                password = passwordEdit.getText().toString();
+                new ScholarScraper.AssignmentRetriever().execute(courses, username, password, listener);
             }
         });
 
@@ -83,15 +94,26 @@ public class UpdateFragment extends Fragment {
 
     /**
      * Used as a listener to process the onPagedFinished callbacks in the
-     * ScholarScraper class. This is necessary to keep the main thread from
+     * ScholarScraper class. This is necessary to keep the main thread from++++++
      * hanging for too long, and is useful for organizing the update process
      * as a whole.
      */
     public class PageLoadListener {
 
-        public void mainPageLoaded() {
+        /**
+         * handles execution after the main page was loaded.
+         * @param result from loading the main page from the scraper instance.
+         *        If false, then main page failed to load (most likely due to
+         *        a bad login).
+         */
+        public void mainPageLoaded(boolean result) {
             try {
-                scraperInstance.retrieveCourses("Spring 2013");
+                if (result) {
+                    scraperInstance.retrieveCourses("Spring 2013");
+                }
+                else {
+                    return;
+                }
             }
             catch (WrongLoginException e) {
                 e.printStackTrace();
@@ -116,13 +138,14 @@ public class UpdateFragment extends Fragment {
                 System.out.println("Courses not loaded yet");
             }
             if (index < courses.size()) {
-
                 Course course = courses.get(index);
                 System.out.println("loading: " + course);
                 scraperInstance.retrieveAssignmentPages(course);
                 index++;
             }
             else {
+                /* webview loading is done at this point */
+                scraperInstance.logout();
                 retrieveAssignments(courses);
             }
         }
