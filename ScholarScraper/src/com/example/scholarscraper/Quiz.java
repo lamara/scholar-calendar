@@ -1,77 +1,66 @@
 package com.example.scholarscraper;
 
+import java.util.TimeZone;
 import java.text.ParseException;
 import java.util.Calendar;
-import java.util.TimeZone;
 
-// -------------------------------------------------------------------------
-/**
- * Write a one-sentence summary of your class here. Follow it with additional
- * details about its purpose, what abstraction it represents, and how to use it.
- *
- * @author Alex Lamar
- * @author Paul Yea
- * @author Brianna Beitzel
- * @version Apr 6, 2013
- */
-public class Assignment
+public class Quiz
     extends Task
 {
-    // ----------------------------------------------------------
+
     /**
-     * Create a new Assignment object.
+     * Create a new Quiz object.
      * @param name
      * @param description
      * @param dueDate
      */
-    public Assignment(String name, String description, Calendar dueDate)
+    public Quiz(String name, String description, Calendar dueDate)
     {
         super(name, description, dueDate);
     }
 
-
-    // ----------------------------------------------------------
     /**
-     * Create a new Assignment object.
+     * Create a new Quiz object.
      * @param name
      * @param description
      * @param dueDate
      * @throws ParseException
      */
-    public Assignment(String name, String description, String dueDate)
+    public Quiz(String name, String description, String dueDate)
         throws ParseException
     {
         super(name, description, dueDate);
     }
 
 
-    /* Apr 17, 2013 12:30 am */
-
+    /**
+     * Parses a string of the format "2013-Jan-27 04:48 PM" into a calendar
+     * object
+     */
     @Override
     public Calendar parseDate(String date)
         throws ParseException
     {
         Calendar c = Calendar.getInstance();
+        String[] data = date.split("\\s+");
+        String[] yearMonthDay = data[0].split("-");
+        String[] hourMinute = data[1].split(":");
+        String amPm = data[2];
 
-        String[] data = date.split("\\s+"); // splits around whitespace
-        String[] hourMinute = data[3].split(":");
-
-        int month =  getCalendarMonth(data[0]);
-        int day =    Integer.parseInt(data[1].replace(",", "")); //
-        int year =   Integer.parseInt(data[2]);
+        int year =   Integer.parseInt(yearMonthDay[0]);
+        int month =  getCalendarMonth(yearMonthDay[1]);
+        int day =    Integer.parseInt(yearMonthDay[2]);
         int hour =   Integer.parseInt(hourMinute[0]);
         int minute = Integer.parseInt(hourMinute[1]);
         /* Calendar hours go from 0-11, but scholar can display hours up to 12 */
         if (hour == 12) {
             hour = 0;
         }
-
-        String amPm = data[4];
-        if (amPm.equals("am"))
+        if (amPm.equals("AM"))
         {
             c.set(Calendar.AM_PM, Calendar.AM);
         }
-        else if (amPm.equals("pm"))
+        else if (amPm.equals("PM"))
         {
             c.set(Calendar.AM_PM, Calendar.PM);
         }
@@ -90,4 +79,5 @@ public class Assignment
         System.out.println(c.getTime());
         return c;
     }
+
 }

@@ -1,13 +1,7 @@
 package com.example.scholarscraper;
 
-
-import android.support.v4.app.FragmentActivity;
-import android.webkit.WebSettings;
-import android.os.SystemClock;
-import android.view.KeyEvent;
-import android.webkit.WebViewClient;
-import android.webkit.WebView;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 
 public class MainActivity

@@ -25,7 +25,7 @@ import org.jsoup.select.Elements;
  * Used to connect to the Virginia Tech CAS authentication system via SSL.
  * Secure. Many services in this API take/contain a Cas session, and it must be
  * active for them to work.
- *
+ * 
  * @author Ethan Gaebel (egaebel)
  * @auther Alex Lamar (updated, removed unnecessary portions)
  */
@@ -98,7 +98,7 @@ public final class Cas
     /**
      * Constructor taking a username and password to be used with HokieSpa
      * session management. Logs into CAS immediately.
-     *
+     * 
      * @param username
      *            a character array that is a HokieSpa username.
      * @param password
@@ -159,7 +159,7 @@ public final class Cas
      * Constructor taking a username and password to be used with HokieSpa
      * session management; and a filePath to save the SSL certificate to. Logs
      * into CAS immediately.
-     *
+     * 
      * @param username
      *            a character array that is a HokieSpa username.
      * @param password
@@ -223,7 +223,7 @@ public final class Cas
     // ~Methods-------------------------------------------------
     /**
      * Refreshes a Cas session that has timed out.
-     *
+     * 
      * @return true if the session was refreshed, false if it was not. Note: a
      *         session may fail to be refreshed if the username/password are
      *         incorrect.
@@ -260,7 +260,7 @@ public final class Cas
     /**
      * Switches the user that is active on this session to the passed in
      * username and password.
-     *
+     * 
      * @param username
      *            the new username to use.
      * @param password
@@ -314,7 +314,7 @@ public final class Cas
     /**
      * Switches the user that is active on this session to the passed in
      * username and password. Logs in with new user immediately.
-     *
+     * 
      * @param username
      *            the new username to use.
      * @param password
@@ -368,7 +368,7 @@ public final class Cas
 
     /**
      * Closes down this Cas session.
-     *
+     * 
      * @return true if the session closed successfully, false if it did not
      *         close.
      */
@@ -382,7 +382,7 @@ public final class Cas
 
     /**
      * Grabs the needed SSL Certificate from the CAS login page.
-     *
+     * 
      * @return true if successful, false if there was an IOException,
      *         MalformedURLException, SSLPeerUnverifiedException, or a
      *         CertificateEncodingException. See StackTrace to figure out which
@@ -435,7 +435,7 @@ public final class Cas
     /**
      * Grabs the needed SSL Certificate from the CAS login page. Saves the file
      * to the passed in directory.
-     *
+     * 
      * @return true if successful, false if there was an IOException,
      *         MalformedURLException, SSLPeerUnverifiedException, or a
      *         CertificateEncodingException. See StackTrace to figure out which
@@ -489,7 +489,7 @@ public final class Cas
      * Takes in a username and password and logs into CAS with the supplied
      * username and password. For best performance this method call should be
      * done in a separate thread.
-     *
+     * 
      * @param username
      *            the username of the user.
      * @param password
@@ -506,99 +506,95 @@ public final class Cas
         try
         {
 
+            // System.setProperty(
+            // "javax.net.ssl.trustStore",
+            // cert.getAbsolutePath());
 
-                //System.setProperty(
-                //    "javax.net.ssl.trustStore",
-                //    cert.getAbsolutePath());
+            // get three hidden fields, and cookies from initial Login Page
+            Response loginPageResp = Jsoup.connect(LOGIN).execute();
 
-                // get three hidden fields, and cookies from initial Login Page
-                Response loginPageResp = Jsoup.connect(LOGIN).execute();
+            // save JSESSION cookie from the LOGIN URL's response
+            cookies = loginPageResp.cookies();
 
-                // save JSESSION cookie from the LOGIN URL's response
-                cookies = loginPageResp.cookies();
+            // get the document from the response to retrieve hidden fields
+            Document doc = loginPageResp.parse();
 
-                // get the document from the response to retrieve hidden fields
-                Document doc = loginPageResp.parse();
+            // select the correct div section under form-->fieldset
+            // Element form = doc.select("form").first();
+            Elements divs = doc.select("form fieldset div");
+            Element div6 = divs.get(5);
 
-                // select the correct div section under form-->fieldset
-                // Element form = doc.select("form").first();
-                Elements divs = doc.select("form fieldset div");
-                Element div6 = divs.get(5);
-
-                // hashmap to hold hiddenFields in document, as well as
+            // hashmap to hold hiddenFields in document, as well as
 // username,
-                // password
-                Map<String, String> hiddenFields =
-                    new HashMap<String, String>();
+            // password
+            Map<String, String> hiddenFields = new HashMap<String, String>();
 
-                // place hidden fields & _submit into hashmap for passing
-                hiddenFields.put("lt", div6.getElementsByIndexEquals(0).val());
-                hiddenFields.put("execution", div6.getElementsByIndexEquals(1)
-                    .val());
-                hiddenFields.put("_eventId", div6.getElementsByIndexEquals(2)
-                    .val());
+            // place hidden fields & _submit into hashmap for passing
+            hiddenFields.put("lt", div6.getElementsByIndexEquals(0).val());
+            hiddenFields.put("execution", div6.getElementsByIndexEquals(1)
+                .val());
+            hiddenFields
+                .put("_eventId", div6.getElementsByIndexEquals(2).val());
 
-                // will always be this value on the CAS page
-                hiddenFields.put("submit", "_submit");
+            // will always be this value on the CAS page
+            hiddenFields.put("submit", "_submit");
 
-                // place username and password into hashmap for passing
-                hiddenFields.put("username", String.copyValueOf(username));
-                hiddenFields.put("password", String.copyValueOf(password));
+            // place username and password into hashmap for passing
+            hiddenFields.put("username", String.copyValueOf(username));
+            hiddenFields.put("password", String.copyValueOf(password));
 
-                // enter in the hidden fields as well as username and pasword --
-                // press submit, USE GET METHOD!!!
-                Response resp =
+            // enter in the hidden fields as well as username and pasword --
+            // press submit, USE GET METHOD!!!
+            Response resp =
+                Jsoup
+                    .connect(LOGIN)
+                    .data(hiddenFields)
+                    .cookie("JSESSIONID", cookies.get("JSESSIONID"))
+                    .method(Method.GET)
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .referrer(LOGIN).userAgent(AGENTS).execute();
+
+            // get all cookies from the resp generated above to use in
+// future
+            // authentication
+            cookies.putAll(resp.cookies());
+
+            Document loginCheck = resp.parse();
+
+            // check to see if the login was successful
+            Elements checkLoginEls = loginCheck.select("#login-error");
+            Elements checkRecoveryEls = loginCheck.select("#warn");
+
+            // check for correct username/password
+            if (checkLoginEls.size() > 0)
+            {
+
+                throw new WrongLoginException();
+            }
+            // check for recovery options warning
+            else if (checkRecoveryEls.size() > 0
+                && checkRecoveryEls.get(0).text().trim()
+                    .contains(RECOVERY_OPTIONS_STRING))
+            {
+
+                resp =
                     Jsoup
-                        .connect(LOGIN)
-                        .data(hiddenFields)
+                        .connect(resp.url().toString())
+                        .cookies(hiddenFields)
                         .cookie("JSESSIONID", cookies.get("JSESSIONID"))
                         .method(Method.GET)
                         .header(
                             "Content-Type",
                             "application/x-www-form-urlencoded")
-                        .referrer(LOGIN).userAgent(AGENTS).execute();
+                        .userAgent(AGENTS).execute();
 
-                // get all cookies from the resp generated above to use in
-// future
-                // authentication
                 cookies.putAll(resp.cookies());
+            }
 
-                Document loginCheck = resp.parse();
+            active = true;
+            refreshSession = false;
 
-                // check to see if the login was successful
-                Elements checkLoginEls = loginCheck.select("#login-error");
-                Elements checkRecoveryEls = loginCheck.select("#warn");
-
-                // check for correct username/password
-                if (checkLoginEls.size() > 0)
-                {
-
-                    throw new WrongLoginException();
-                }
-                // check for recovery options warning
-                else if (checkRecoveryEls.size() > 0
-                    && checkRecoveryEls.get(0).text().trim()
-                        .contains(RECOVERY_OPTIONS_STRING))
-                {
-
-                    resp =
-                        Jsoup
-                            .connect(resp.url().toString())
-                            .cookies(hiddenFields)
-                            .cookie("JSESSIONID", cookies.get("JSESSIONID"))
-                            .method(Method.GET)
-                            .header(
-                                "Content-Type",
-                                "application/x-www-form-urlencoded")
-                            .userAgent(AGENTS).execute();
-
-                    cookies.putAll(resp.cookies());
-                }
-
-                active = true;
-                refreshSession = false;
-
-                return true;
+            return true;
         }
         catch (SocketTimeoutException e)
         {
@@ -620,7 +616,7 @@ public final class Cas
      * Android usage, because the file system differs from java's default one.
      * For best performance this method call should be done in a separate
      * thread.
-     *
+     * 
      * @param username
      *            the username of the user.
      * @param password
@@ -752,7 +748,7 @@ public final class Cas
 
     /**
      * End this CAS session. If this returns false the session stays open.
-     *
+     * 
      * @return true if successful, false if an error occurred (the session will
      *         remain open).
      */
@@ -802,7 +798,7 @@ public final class Cas
 // Setters--------------------------------------------------------------
     /**
      * Getter for cookies.
-     *
+     * 
      * @return cookies the cookies that have been pulled from Cas, if a login
      *         has occurred. Otherwise, returns null
      */
@@ -817,7 +813,7 @@ public final class Cas
     /**
      * Tests to see if this CAS object has an active login session with
      * hokiespa.
-     *
+     * 
      * @return true if active, false otherwise.
      */
     public boolean isActive()
@@ -837,7 +833,7 @@ public final class Cas
     /**
      * Indicates whether the login information stored in this Cas object is
      * valid. Validity is determined when attempting to log into hokiespa.
-     *
+     * 
      * @return true if login information is valid, false otherwise.
      */
     public boolean isValidLoginInfo()
