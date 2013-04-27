@@ -158,6 +158,7 @@ public class ScholarScraper
                     @Override
                     public void onPageFinished(WebView view1, String url1)
                     {
+                        listener.incrementProgress();
                         System.out.println("retrieving main page html");
                         if (!webView.getUrl().equals(MAIN_PAGE))
                         {
@@ -168,8 +169,8 @@ public class ScholarScraper
                         }
                         System.out.println("main page loaded unsucsesfully");
                         listener.mainPageLoaded(false);
-                        mainPageHtml = getHtml(); // getHtml() sleeps for 1500
-// ms
+                        mainPageHtml = getHtml(); // getHtml() sleeps for 1500 ms
+                        listener.incrementProgress();
                         mainPageLoaded = true;
                         System.out.println(mainPageHtml);
                         clearOnPageFinished();
@@ -178,6 +179,7 @@ public class ScholarScraper
                         listener.mainPageLoaded(true);
                     }
                 });
+                listener.incrementProgress();
                 webView
                     .loadUrl("javascript:document.getElementById('username').value = '"
                         + username
@@ -188,8 +190,8 @@ public class ScholarScraper
                 System.out.println("main page loading");
             }
         });
-        webView.loadUrl(LOGIN_PAGE); // async, calls 1st nested onPageFinished
-// when done
+        listener.incrementProgress();
+        webView.loadUrl(LOGIN_PAGE); // async, calls 1st nested onPageFinished when done
     }
 
 
@@ -296,6 +298,7 @@ public class ScholarScraper
      */
     private void parseCourseHtml(String html)
     {
+
         String className;
         String rootUrl;
         Course course;
@@ -308,6 +311,8 @@ public class ScholarScraper
 
         course = new Course(className, rootUrl);
         courses.add(course);
+
+        listener.incrementProgress();
     }
 
 
@@ -368,6 +373,8 @@ public class ScholarScraper
                 quizUrl = (quizHtml != null) ? quizHtml.attr("href") : null;
 
                 clearOnPageFinished();
+
+                listener.incrementProgress();
                 retrieveAssignmentUrls(assignmentUrl, quizUrl, course);
             }
         });
@@ -601,6 +608,7 @@ public class ScholarScraper
                     {
                         parseQuizPage(course);
                     }
+                    listener.incrementProgress();
                 }
                 cas.closeSession();
             }
