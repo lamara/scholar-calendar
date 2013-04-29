@@ -1,5 +1,6 @@
 package com.example.scholarscraper;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +17,7 @@ import java.util.List;
  * @version Apr 8, 2013
  */
 
-public class Course
+public class Course implements Serializable
 {
     private final String name;
     private final String mainUrl;

@@ -134,10 +134,6 @@ public class UpdateFragment
             }
         });
 
-
-
-
-
         context = getActivity();
 
         return myFragmentView;
@@ -172,7 +168,7 @@ public class UpdateFragment
                 }
                 else
                 {
-                    return;
+                    setCancelable(true);
                 }
             }
             catch (WrongLoginException e)
@@ -240,6 +236,11 @@ public class UpdateFragment
             progressBar.setProgress(100);
             setCancelable(true);
             System.out.println("updateFinished() called");
+            if (context instanceof MainActivity) {
+                MainActivity mainActivity = (MainActivity) context;
+                mainActivity.onUpdateFinished(courses);
+                System.out.println("courses passed to main activity");
+            }
         }
 
         public void incrementProgress() {

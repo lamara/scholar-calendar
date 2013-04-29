@@ -148,7 +148,6 @@ public class ScholarScraper
                 {
                     mainPageHtml = getHtml();
                     mainPageLoaded = true;
-                    System.out.println(mainPageHtml);
                     clearOnPageFinished();
                     listener.mainPageLoaded(true);
                     return;
@@ -167,7 +166,7 @@ public class ScholarScraper
                             listener.mainPageLoaded(false);
                             return;
                         }
-                        System.out.println("main page loaded unsucsesfully");
+                        System.out.println("main page loaded successfully");
                         listener.mainPageLoaded(false);
                         mainPageHtml = getHtml(); // getHtml() sleeps for 1500 ms
                         listener.incrementProgress();
@@ -587,7 +586,6 @@ public class ScholarScraper
             String password =                (String) params[2];
             listener =             (PageLoadListener) params[3];
             context =                       (Context) params[4];
-            calendarSetter = CalendarSetter.getInstance(context, "alawi");
 
             if (courses == null)
             {
@@ -687,7 +685,6 @@ public class ScholarScraper
                             new Assignment(title, courseName, dueDate);
                         if (course.addTask(assignment))
                         {
-                            calendarSetter.addEvent(assignment);
                             // assignment was added successfully, now do
                             // operations on the assignment
                             // to set notifications, add it to the calendar,
@@ -749,7 +746,6 @@ public class ScholarScraper
 
                     Task quiz = new Quiz(title, courseName, dueDate);
                     if (course.addTask(quiz)) {
-                        calendarSetter.addEvent(quiz);
                         // quiz was added successfully, now do operations on the
                         // quiz to set notifications, add it to the calendar, etc..
                     }

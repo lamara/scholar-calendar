@@ -1,5 +1,6 @@
 package com.example.scholarscraper;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Calendar;
 
@@ -13,7 +14,7 @@ import java.util.Calendar;
  * @version Apr 20, 2013
  */
 
-public abstract class Task
+public abstract class Task implements Serializable
 {
     private String                name;
     private String                description;
