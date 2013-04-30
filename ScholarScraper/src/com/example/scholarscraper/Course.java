@@ -137,6 +137,15 @@ public class Course implements Serializable
         return hasLoaded();
     }
 
+    /**
+     * Place a description of your method here.
+     * @return assignment list
+     */
+    public List<Task> getAssignments()
+    {
+        return assignments;
+    }
+
 
     /**
      * Indicates that the current object has loaded its assignment or quiz URLs,

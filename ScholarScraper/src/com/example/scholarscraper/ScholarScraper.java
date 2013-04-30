@@ -9,7 +9,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import com.example.casexample.exceptions.WrongLoginException;
-import com.example.scholarscraper.UpdateFragment.PageLoadListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -43,7 +42,6 @@ public class ScholarScraper
 {
     /* An android webview is used internally to handle AJAX parsing */
     private WebView              webView;
-
     private String               username;
     private String               password;
     private String               mainPageHtml;
@@ -54,7 +52,7 @@ public class ScholarScraper
     private JavaScriptHtmlParser jsInstance;
     private boolean              mainPageLoaded;
 
-    private PageLoadListener     listener;
+    private UpdateListener       listener;
 
     private final String         USER_AGENT    =
                                                    "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0";
@@ -88,7 +86,7 @@ public class ScholarScraper
         String password,
         Context context,
         WebView webView,
-        PageLoadListener listener)
+        UpdateListener listener)
         throws IOException,
         WrongLoginException
     {
@@ -117,7 +115,7 @@ public class ScholarScraper
         String username,
         String password,
         Context context,
-        PageLoadListener listener)
+        UpdateListener listener)
     {
         this.username = username;
         this.password = password;
@@ -171,7 +169,7 @@ public class ScholarScraper
                         mainPageHtml = getHtml(); // getHtml() sleeps for 1500 ms
                         listener.incrementProgress();
                         mainPageLoaded = true;
-                        System.out.println(mainPageHtml);
+                        //System.out.println(mainPageHtml);
                         clearOnPageFinished();
 
                         System.out.println("main page loaded successfully");
@@ -565,7 +563,7 @@ public class ScholarScraper
     {
 
         private Map<String, String> casCookies;
-        private PageLoadListener    listener;
+        private UpdateListener    listener;
         private Context             context;
         private CalendarSetter      calendarSetter;
 
@@ -584,7 +582,7 @@ public class ScholarScraper
             List<Course> courses = (ArrayList<Course>)params[0];
             String username =                (String) params[1];
             String password =                (String) params[2];
-            listener =             (PageLoadListener) params[3];
+            listener =             (UpdateListener) params[3];
             context =                       (Context) params[4];
 
             if (courses == null)
@@ -593,6 +591,9 @@ public class ScholarScraper
             }
             try
             {
+                if (username.equals("") || password.equals("")) {
+                    throw new WrongLoginException();
+                }
                 Cas cas = new Cas(username.toCharArray(), password.toCharArray());
                 casCookies = cas.getCookies();
                 System.out.println("CAS loaded");
@@ -746,6 +747,7 @@ public class ScholarScraper
 
                     Task quiz = new Quiz(title, courseName, dueDate);
                     if (course.addTask(quiz)) {
+
                         // quiz was added successfully, now do operations on the
                         // quiz to set notifications, add it to the calendar, etc..
                     }

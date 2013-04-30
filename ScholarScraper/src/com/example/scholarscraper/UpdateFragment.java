@@ -1,5 +1,15 @@
 package com.example.scholarscraper;
 
+import java.io.DataInputStream;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.io.File;
 import android.widget.ProgressBar;
 import android.app.ProgressDialog;
 import android.app.DialogFragment;
@@ -45,9 +55,12 @@ public class UpdateFragment
      */
     private int              index;
     private List<Course>     courses;
-    private PageLoadListener listener;
+    private UpdateListener listener;
     private String username;
     private String password;
+
+    final private static String USER_FILE_NAME = "userData";
+    final private static String COURSE_FILE_NAME = "courses";
 
     public UpdateFragment(List<Course> courses) {
         this.username = username;
@@ -73,13 +86,20 @@ public class UpdateFragment
         assignment =            (Button) myFragmentView.findViewById(R.id.assignment);
         progressBar =      (ProgressBar) myFragmentView.findViewById(R.id.progressBar);
 
-        listener = new PageLoadListener();
+        context = getActivity();
+
+        listener = new UpdateFragmentListener();
 
         updateNotification.setVisibility(View.GONE);
         progressBar.setVisibility(View.GONE);
 
         //final View progressView = inflater.inflate(R.layout.progress_layout, container,
         //                                           false);
+
+        if (recoverUsernamePassword()) {
+            usernameEdit.setText(username);
+            passwordEdit.setText(password);
+        }
 
         index = 0;
 
@@ -134,11 +154,107 @@ public class UpdateFragment
             }
         });
 
-        context = getActivity();
-
         return myFragmentView;
     }
 
+    /**
+     * Saves the user's username and password to internal storage, currently
+     * stores in plain text, this needs to change before distribution
+     */
+    private boolean saveUsernamePassword() {
+        if (username == null || password == null) {
+            System.out.println("username/password were not saved (null)");
+            return false;
+        }
+        File file = new File(context.getFilesDir(), USER_FILE_NAME);
+        try {
+            file.createNewFile();
+            FileOutputStream fout = new FileOutputStream(file);
+            ObjectOutputStream stream= new ObjectOutputStream(fout);
+            try {
+
+                stream.writeObject(username);
+                stream.writeObject(password);
+                System.out.println("username/password were saved");
+                return true;
+            }
+            finally {
+                stream.close();
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Retrieves the user's username and password from internal storage
+     */
+    private boolean recoverUsernamePassword() {
+        System.out.println(context.getFilesDir() + " update fragment");
+        File file = new File(context.getFilesDir(), USER_FILE_NAME);
+        try {
+            InputStream inputStream = new FileInputStream(file);
+            InputStream buffer = new BufferedInputStream(inputStream);
+            ObjectInputStream input = new ObjectInputStream (buffer);
+            try {
+                username = (String) input.readObject();
+                password = (String) input.readObject();
+                if (username != null && password != null) {
+                    System.out.println("Username/password retrieved");
+                    return true;
+                }
+                System.out.println("Username/password not retrieved");
+                return false;
+            }
+            finally {
+                input.close();
+            }
+        }
+        catch (ClassNotFoundException e) {
+            System.out.println("Username/password not retrieved");
+            e.printStackTrace();
+            return false;
+        }
+        catch (IOException e) {
+            System.out.println("Username/password not retrieved");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * returns true if courses are successfully saved to internal storage,
+     * false if not
+     * @throws IOException
+     */
+    private boolean saveCourses() {
+        File file = new File(context.getFilesDir(), COURSE_FILE_NAME);
+        try {
+            file.createNewFile();
+            FileOutputStream fout = new FileOutputStream(file);
+            ObjectOutputStream objectStream= new ObjectOutputStream(fout);
+            try {
+                if (courses != null) {
+                    objectStream.writeObject(courses);
+                    System.out.println("courses were saved");
+                    return true;
+                }
+                else {
+                    System.out.println("courses were not saved");
+                    return false;
+                }
+            }
+            finally {
+                objectStream.close();
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     /**
      * Used as a listener to process the onPagedFinished callbacks in the
@@ -146,7 +262,7 @@ public class UpdateFragment
      * from hanging for too long, and is useful for organizing the update
      * process as a whole.
      */
-    public class PageLoadListener
+    public class UpdateFragmentListener extends UpdateListener
     {
 
         /**
@@ -239,6 +355,8 @@ public class UpdateFragment
             if (context instanceof MainActivity) {
                 MainActivity mainActivity = (MainActivity) context;
                 mainActivity.onUpdateFinished(courses);
+                saveCourses();
+                saveUsernamePassword();
                 System.out.println("courses passed to main activity");
             }
         }

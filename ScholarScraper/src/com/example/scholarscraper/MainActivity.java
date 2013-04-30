@@ -1,5 +1,19 @@
 package com.example.scholarscraper;
 
+import android.widget.BaseAdapter;
+import android.widget.AdapterView;
+import android.view.View;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.TextView;
+import android.widget.Button;
+import android.widget.GridView;
+import java.util.GregorianCalendar;
+import java.util.Calendar;
+import android.content.Context;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import java.io.Serializable;
+import android.content.Intent;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.BufferedInputStream;
@@ -23,6 +37,18 @@ public class MainActivity
     extends Activity
 {
     List<Course> courses;
+    private GregorianCalendar   calendar;
+    private Calendar            c;
+    private GridView            gridView;
+    private int                 p;
+    private int                 displayedMonth;
+    private String[]            months           = { "January", "Febuary",
+        "March", "April", "May", "June", "July", "August", "Spetember",
+        "October", "November", "December"};
+    private Button              next;
+    private Button              previous;
+    private Button              updateButton;
+    private TextView            month;
 
     private static final String COURSE_FILE_NAME = "courses";
 
@@ -42,6 +68,112 @@ public class MainActivity
 
         DialogFragment fragment = new UpdateFragment(courses);
         fragment.show(transaction, "update");
+
+
+
+        if (courses != null) {
+            Intent service = new Intent(this, UpdateService.class);
+            PendingIntent pendingIntent = PendingIntent.getService(this, 0, service, 0);
+
+            AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+            Calendar cal = Calendar.getInstance();
+
+            alarm.cancel(pendingIntent); //removes already existing alarms (if they
+                                         //exist) to prevent duplicates from happening
+            /* triggers update process every 3 hours */
+            alarm.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
+                               AlarmManager.INTERVAL_HOUR * 3, pendingIntent);
+        }
+
+        c = new GregorianCalendar();
+        c = Calendar.getInstance();
+
+        month = (TextView)this.findViewById(R.id.month);
+        month.setText(months[c.get(Calendar.MONTH)]);
+        displayedMonth = c.get(Calendar.MONTH);
+
+        gridView = (GridView)this.findViewById(R.id.gridview);
+        gridView.setAdapter(new ImageAdapter(this, c.get(Calendar.MONTH), c
+                            .get(Calendar.YEAR), courses));
+
+        gridView.setOnItemClickListener(new OnItemClickListener() {
+
+            public void onItemClick(
+                AdapterView<?> parent,
+                View v,
+                int position,
+                long id)
+            {
+                Intent i = new Intent(MainActivity.this, AssignmentPopUp.class);
+                i.putExtra("com.example.scholarscraper.Date", Integer.parseInt((String)gridView.getAdapter().getItem(position)));
+                i.putExtra("com.example.scholarscraper.Month", Integer.parseInt(((ImageAdapter)gridView.getAdapter()).getM()));
+                i.putExtra("com.example.scholarscraper.courses", (Serializable) courses);
+                MainActivity.this.startActivity(i);
+            }
+        });
+
+        next = (Button)this.findViewById(R.id.next);
+        next.setOnClickListener(new Button.OnClickListener() {
+
+            public void onClick(View v)
+            {
+                int m = displayedMonth + 1;
+                if (m <= 11)
+                {
+                    gridView.setAdapter(new ImageAdapter(
+                        gridView.getContext(),
+                        m,
+                        c.get(Calendar.YEAR),
+                        courses));
+                    month.setText(months[m]);
+                    displayedMonth++;
+                }
+                else
+                {
+                    gridView.setAdapter(new ImageAdapter(
+                        gridView.getContext(),
+                        0,
+                        c.get(Calendar.YEAR) + 1,
+                        courses));
+                    month.setText(months[0]);
+                    displayedMonth = 0;
+                }
+                ((BaseAdapter)gridView.getAdapter()).notifyDataSetChanged();
+            }
+        });
+
+        previous = (Button)this.findViewById(R.id.previous);
+        previous.setOnClickListener(new Button.OnClickListener() {
+
+            public void onClick(View v)
+            {
+
+                int m = displayedMonth - 1;
+                if (m >= 0) // TODO Logic might not be exactly right. Check it.
+                {
+                    gridView.setAdapter(new ImageAdapter(
+                        gridView.getContext(),
+                        m,
+                        c.get(Calendar.YEAR),
+                        courses));
+                    month.setText(months[m]);
+                    displayedMonth--;
+                }
+                else
+                {
+                    gridView.setAdapter(new ImageAdapter(
+                        gridView.getContext(),
+                        11,
+                        c.get(Calendar.YEAR) - 1,
+                        courses));
+                    month.setText(months[11]);
+                    displayedMonth = 11;
+                }
+                ((BaseAdapter)gridView.getAdapter()).notifyDataSetChanged();
+            }
+        });
+
     }
 
 
@@ -56,7 +188,6 @@ public class MainActivity
     @Override
     protected void onPause() {
         super.onPause();
-        saveCourses();
     }
 
     /**
@@ -66,39 +197,6 @@ public class MainActivity
     public void onUpdateFinished(List<Course> courses) {
         this.courses = courses;
     }
-
-    /**
-     * returns true if courses are successfully saved to internal storage,
-     * false if not
-     * @throws IOException
-     */
-    private boolean saveCourses() {
-        File file = new File(getFilesDir(), COURSE_FILE_NAME);
-        try {
-            file.createNewFile();
-            FileOutputStream fout = new FileOutputStream(file);
-            ObjectOutputStream objectStream= new ObjectOutputStream(fout);
-            try {
-                if (courses != null) {
-                    objectStream.writeObject(courses);
-                    System.out.println("courses were saved");
-                    return true;
-                }
-                else {
-                    System.out.println("courses were not saved");
-                    return false;
-                }
-            }
-            finally {
-                objectStream.close();
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     /**
      * tries to retrieve the courselist from internal storage, returns true
      * if successful, false if not
