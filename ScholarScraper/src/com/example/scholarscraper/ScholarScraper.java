@@ -1,5 +1,7 @@
 package com.example.scholarscraper;
 
+import java.util.Calendar;
+import android.content.Intent;
 import com.example.scholarscraper.CalendarSetter;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -227,10 +229,9 @@ public class ScholarScraper
         }
         System.out.println("executing main page parsing/course retrieval");
         Document mainPage = Jsoup.parse(mainPageHtml);
-        String[] htmls = retrieveCourseHtmls(mainPage, "Spring 2013");
+        String[] htmls = retrieveCourseHtmls(mainPage, getSemester());
         if (htmls.length == 0)
         {
-            System.out.println("no classes found");
         }
         for (String html : htmls)
         {
@@ -240,12 +241,31 @@ public class ScholarScraper
         listener.coursesLoaded();
     }
 
+    /**
+     * Gets the current semester in the format "Spring/Fall 2xxx", i.e. "Spring 2013"
+     */
+    private String getSemester() {
+        Calendar c = Calendar.getInstance();
+        int month = c.get(Calendar.MONTH);
+        month = (month + 6) % 12; // advances months by 6 so 0 is effectively July
+        String semester;
+        if (month < 6) { //from July to December
+            semester = "Fall " + c.get(Calendar.YEAR);
+            System.out.println(semester);
+            return semester;
+        }
+        else { //from January to June
+            semester = "Spring " + c.get(Calendar.YEAR);
+            System.out.println(semester);
+            return semester;
+        }
+    }
 
     /**
      * Retrieves href information from the Scholar mainpage, giving the html
      * lines for all course pages within a semester
      *
-     * @return links to course pages underneath Spring 2013
+     * @return links to course pages underneath the current semester
      * @throws IOException
      */
     private static String[] retrieveCourseHtmls(
@@ -690,6 +710,7 @@ public class ScholarScraper
                             // operations on the assignment
                             // to set notifications, add it to the calendar,
                             // etc..
+                            setAlarm(assignment);
                         }
                     }
                 }
@@ -750,6 +771,7 @@ public class ScholarScraper
 
                         // quiz was added successfully, now do operations on the
                         // quiz to set notifications, add it to the calendar, etc..
+                        setAlarm(quiz);
                     }
                 }
             }
@@ -760,6 +782,21 @@ public class ScholarScraper
             }
         }
 
+        /**
+         * Sets an alarm
+         */
+        private void setAlarm(Task task) {
+            Intent localIntent =
+                new Intent(context, AlarmService.class);
+            localIntent.putExtra("dueDate", task.getDueDate()
+                .getTimeInMillis());
+            localIntent.putExtra("title", task.getName());
+            localIntent.putExtra(
+                "alarm_id",
+                System.currentTimeMillis());
+            localIntent.setAction("CREATE");
+            context.startService(localIntent);
+        }
 
         /**
          * Loads all cookies from a given cookie hashmap into a Jsoup connection

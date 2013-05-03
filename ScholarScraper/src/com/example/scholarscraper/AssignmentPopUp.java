@@ -45,6 +45,10 @@ public class AssignmentPopUp
         courses = (List<Course>) i.getSerializableExtra("com.example.scholarscraper.courses");
         assignmentText = (TextView)this.findViewById(R.id.assignmentText);
 
+        if (courses == null) {
+            courses = new ArrayList<Course>();
+        }
+
         List<Task> tasks;
         for (Course c : courses)
         {

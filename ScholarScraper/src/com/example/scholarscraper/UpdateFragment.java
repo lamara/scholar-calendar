@@ -62,11 +62,7 @@ public class UpdateFragment
     final private static String USER_FILE_NAME = "userData";
     final private static String COURSE_FILE_NAME = "courses";
 
-    public UpdateFragment(List<Course> courses) {
-        this.username = username;
-        this.password = password;
-        this.courses = courses;
-    }
+
 
     @Override
     public View onCreateView(

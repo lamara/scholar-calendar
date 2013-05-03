@@ -1,5 +1,7 @@
 package com.example.scholarscraper;
 
+import android.view.MenuItem;
+import android.app.ActionBar;
 import android.widget.BaseAdapter;
 import android.widget.AdapterView;
 import android.view.View;
@@ -63,13 +65,7 @@ public class MainActivity
             courses = null;
         }
 
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.addToBackStack(null);
-
-        DialogFragment fragment = new UpdateFragment(courses);
-        fragment.show(transaction, "update");
-
-
+        launchUpdateDialog();
 
         if (courses != null) {
             Intent service = new Intent(this, UpdateService.class);
@@ -182,7 +178,60 @@ public class MainActivity
     {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.activity_main, menu);
+        ActionBar actionBar = getActionBar();
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+      switch (item.getItemId()) {
+          case R.id.action_update: {
+              launchUpdateDialog();
+              break;
+          }
+          case R.id.action_change_user: {
+              launchChangeDialog();
+              break;
+          }
+          case R.id.action_settings: {
+              launchSettingsDialog();
+              break;
+          }
+      }
+      return true;
+    }
+
+    /**
+     * Launches the change user dialog
+     */
+    private void launchChangeDialog() {
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.addToBackStack(null);
+
+        DialogFragment fragment = new ChangeFragment();
+        fragment.show(transaction, "change");
+    }
+
+    /**
+     * Launches the settings popup dialog
+     */
+    private void launchSettingsDialog() {
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.addToBackStack(null);
+
+        DialogFragment fragment = new SettingsFragment();
+        fragment.show(transaction, "settings");
+    }
+
+    /**
+     * Launches the update popup dialog
+     */
+    private void launchUpdateDialog() {
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.addToBackStack(null);
+
+        DialogFragment fragment = new UpdateFragment();
+        fragment.show(transaction, "update");
     }
 
     @Override

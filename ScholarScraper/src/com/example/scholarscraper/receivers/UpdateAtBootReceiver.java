@@ -1,5 +1,6 @@
 package com.example.scholarscraper.receivers;
 
+import com.example.scholarscraper.AlarmService;
 import com.example.scholarscraper.UpdateService;
 import com.example.scholarscraper.Course;
 import android.app.AlarmManager;
