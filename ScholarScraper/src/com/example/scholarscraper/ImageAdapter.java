@@ -1,16 +1,12 @@
 package com.example.scholarscraper;
 
 import com.example.scholarscraper.Task;
-import java.util.HashMap;
 import java.util.GregorianCalendar;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Calendar;
 import android.widget.TextView;
-import android.graphics.PorterDuff;
 import android.graphics.Color;
-import android.widget.GridView;
-import android.widget.ImageView;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,10 +14,14 @@ import android.widget.BaseAdapter;
 
 // -------------------------------------------------------------------------
 /**
- * Write a one-sentence summary of your class here. Follow it with additional
- * details about its purpose, what abstraction it represents, and how to use it.
+ * A subclass of BaseAdapter that creates a Calendar from a gridView on screen.
+ * ImageAdapter determines the month and correctly displays it. If a date has an
+ * assignment due the colour of the text changes to indicate this. The current
+ * date is also higlighted.
  *
- * @author bribytz (brianna beitzel)
+ * @author Alex Lamar
+ * @author Paul Yea
+ * @author Brianna Beitzel
  * @version Apr 17, 2013
  */
 public class ImageAdapter
@@ -42,24 +42,32 @@ public class ImageAdapter
     private String[]          dayNames     = { "Sunday", "Monday", "Tuesday",
         "Wednesday", "Thursday", "Friday", "Saturday" };
 
+    private static int ORANGE = Color.rgb(232, 117, 17);
+    private static int MAROON = Color.rgb(128, 0, 0);
+
 
     // ----------------------------------------------------------
     /**
      * Create a new ImageAdapter object.
      *
      * @param c
+     *            The Context
      * @param month
+     *            The current month.
      * @param year
-     * @param courses
+     *            The current year.
+     * @param course
+     *            A list of the user's courses.
      */
-    public ImageAdapter(Context c, int month, int year, List<Course> courses)
+    public ImageAdapter(Context c, int month, int year, List<Course> course)
     {
         context = c;
         calendar = Calendar.getInstance();
         cal = new GregorianCalendar(year, month, 1);
         this.year = year;
         this.month = month;
-        this.course = courses;
+        this.course = course;
+
         if (month == 0)
         {
             prevMonth = 11;
@@ -68,6 +76,7 @@ public class ImageAdapter
         {
             prevMonth = this.month - 1;
         }
+
         if (month == 11)
         {
             nextMonth = 0;
@@ -76,7 +85,9 @@ public class ImageAdapter
         {
             nextMonth = this.month + 1;
         }
-        if (courses != null) {
+
+        if (course != null)
+        {
             addAssignment();
         }
 
@@ -93,6 +104,14 @@ public class ImageAdapter
             prevDay = daysInMonth(month - 1) - firstDay + 1;
         }
 
+        daysToShow.add("Sun");
+        daysToShow.add("Mon");
+        daysToShow.add("Tue");
+        daysToShow.add("Wed");
+        daysToShow.add("Thur");
+        daysToShow.add("Fri");
+        daysToShow.add("Sat");
+
         // Sets the days from the previous month.
         for (int i = 0; i < firstDay; i++)
         {
@@ -108,7 +127,7 @@ public class ImageAdapter
         // Sets the days for the next month
         int total = daysToShow.size();
         int d = 1;
-        while (total % 7 != 0) // total < 35
+        while (total < 42)
         {
             daysToShow.add(String.valueOf(d));
             d++;
@@ -117,62 +136,121 @@ public class ImageAdapter
     }
 
 
+    /**
+     * Returns the amount of items displayed in the gridView.
+     *
+     * @return The number of days shown.
+     */
     public int getCount()
     {
         return daysToShow.size();
     }
 
 
+    /**
+     * Returns the Object at the given position in the gridView.
+     *
+     * @param position
+     *            The position to look at.
+     * @return The item at specified position.
+     */
     public Object getItem(int position)
     {
         return daysToShow.get(position);
     }
 
 
+    // ----------------------------------------------------------
+    /**
+     * Returns the item at the specified position in the form of a string.
+     *
+     * @param position
+     *            The position to check.
+     * @return The String form of the item at the position.
+     */
+    public String getDayString(int position)
+    {
+        return daysToShow.get(position);
+    }
+
+
+    /**
+     * Returns the item's id.
+     *
+     * @param position
+     * @return 0
+     */
     public long getItemId(int position)
     {
         return 0;
     }
 
 
+    /**
+     * Creates the view for the calendar.
+     *
+     * @param position
+     *            The position to generate.
+     * @param convertView
+     *            The view.
+     * @param parent
+     *            The parent view.
+     * @return The view to be displayed.
+     */
     public View getView(int position, View convertView, ViewGroup parent)
     {
         TextView view = new TextView(context);
 
-        if (isToday(Integer.parseInt(daysToShow.get(position)), month))
-        {
-            view.setTextColor(Color.RED);
-        }
-        if (assignments.size() > 0 && hasAssignment(position, Integer.parseInt(daysToShow.get(position))))
-        {
-            view.setTextColor(Color.MAGENTA);
-        }
-        view.setText(daysToShow.get(position));
+        view.setPadding(0, 0, 0, 0);
 
-        if (position < 1)
+        if (position > 6)
         {
-            view.setBackgroundColor(Color.rgb(250, 240, 245));
-        }
-        else if (position < 31)
-        {
-            view.setBackgroundColor(Color.WHITE);
+            if (isToday(Integer.parseInt(daysToShow.get(position)), month, year))
+            {
+                view.setTextColor(Color.RED);
+            }
+
+            view.setText(daysToShow.get(position));
+
+            if (getMonthInt(
+                position,
+                Integer.parseInt(daysToShow.get(position))) == prevMonth)
+            {
+                view.setTextColor(Color.GRAY);
+            }
+            else if (getMonthInt(
+                position,
+                Integer.parseInt(daysToShow.get(position))) == month)
+            {
+                view.setBackgroundColor(Color.WHITE);
+            }
+            else
+            {
+                view.setTextColor(Color.GRAY);
+            }
+            if (assignments.size() > 0
+                && hasAssignment(
+                    position,
+                    Integer.parseInt(daysToShow.get(position))))
+            {
+                view.setTextColor(MAROON);
+            }
         }
         else
-        // TODO Fix this logic. It isn't EXACTLY right. :/
         {
-            view.setBackgroundColor(Color.rgb(250, 240, 245));
+            view.setText(daysToShow.get(position));
         }
-
         return view;
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Place a description of your method here.
+     * Translates Calendar's days.
      *
      * @param d
-     * @return
+     *            The Day to translate.
+     * @return A numerical value for the day. Between 0-6. Where Sunday is 0.
      */
     public int getDay(int d)
     {
@@ -209,10 +287,11 @@ public class ImageAdapter
 
     // ----------------------------------------------------------
     /**
-     * Place a description of your method here.
+     * Returns the amount of days in the month while accounting for leap years.
      *
      * @param m
-     * @return
+     *            The month to return. 0 - 11 where 0 is January.
+     * @return The number of days in the month.
      */
     public int daysInMonth(int m)
     {
@@ -226,16 +305,21 @@ public class ImageAdapter
 
     // ----------------------------------------------------------
     /**
-     * Place a description of your method here.
+     * Determines if the inputed date is the current date.
      *
      * @param day
+     *            The day.
      * @param m
-     * @return
+     *            The month.
+     * @param y
+     *            The year.
+     * @return true if the days match.
      */
-    public boolean isToday(int day, int m)
+    public boolean isToday(int day, int m, int y)
     {
         if (day == calendar.get(Calendar.DAY_OF_MONTH)
-            && m == calendar.get(Calendar.MONTH))
+            && m == calendar.get(Calendar.MONTH)
+            && y == calendar.get(Calendar.YEAR))
         {
             return true;
         }
@@ -245,7 +329,7 @@ public class ImageAdapter
 
     // ----------------------------------------------------------
     /**
-     * Place a description of your method here.
+     * Gets the user's assignments and adds them to a list.
      */
     public void addAssignment()
     {
@@ -256,47 +340,45 @@ public class ImageAdapter
             for (int i = 0; i < tasks.size(); i++)
             {
                 assignments.add(tasks.get(i));
-                // assignments.add(c.getAssignments().get(i));
             }
-
         }
-        Task t =
-            new Assignment("Test", "More Test", new GregorianCalendar(
-                2013,
-                3,
-                15));
-        assignments.add(t);
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Place a description of your method here.
+     * Determines if the specified date has an assignment due.
      *
-     * @return Description
+     * @param p
+     *            Position to check.
+     * @param d
+     *            Day to check.
+     * @return true if date has an assignment.
      */
     public boolean hasAssignment(int p, int d)
     {
-        // TODO BTWS fix the year assignment which may be slightly wrong.
-        GregorianCalendar dueDate;
-        /*
-         * if (p < 6 && d > 24) { dueDate = new GregorianCalendar(year,
-         * prevMonth, d); } else if (p > 22 && d < 7) { dueDate = new
-         * GregorianCalendar(year, prevMonth, d); } else {
-         */
-        dueDate = new GregorianCalendar(year, month, d);
-        // }
+        int m;
+
+        if (p < 6 && d > 24)
+        {
+            m = prevMonth;
+
+        }
+        else if (p > 22 && d < 7)
+        {
+            m = nextMonth;
+        }
+        else
+        {
+            m = month;
+        }
 
         for (Task t : assignments)
         {
-            if (dueDate.get(Calendar.DATE) == t.getDueDate().get(Calendar.DATE)
-                && dueDate.get(Calendar.MONTH) == t.getDueDate().get(
-                    Calendar.MONTH))
+            if (d == t.getDueDate().get(Calendar.DATE)
+                && m == t.getDueDate().get(Calendar.MONTH)
+                && year == t.getDueDate().get(Calendar.YEAR))
             {
-                System.out.println("DueDate: " + dueDate.get(Calendar.DATE)
-                    + " Month: " + dueDate.get(Calendar.MONTH) + " T dueDate: "
-                    + t.getDueDate().get(Calendar.DATE) + " Month: "
-                    + t.getDueDate().get(Calendar.MONTH));
                 return true;
             }
         }
@@ -304,14 +386,62 @@ public class ImageAdapter
         return false;
     }
 
+
     // ----------------------------------------------------------
     /**
-     * Place a description of your method here.
-     * @return
+     * Returns the month as a String.
+     *
+     * @param position
+     *            The position to check.
+     * @param d
+     *            The day to check.
+     * @return temp The numeric month associated with the day.
      */
-    public String getM()
+    public String getMonth(int position, int d)
     {
-        String temp = "" + month;
+        String temp;
+        if (position < 13 && d > 24)
+        {
+            temp = "" + prevMonth;
+        }
+        else if (position > 29 && d < 7)
+        {
+            temp = "" + nextMonth;
+        }
+        else
+        {
+            temp = "" + month;
+        }
         return temp;
     }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Returns the month as an integer.
+     *
+     * @param position
+     *            The position to check.
+     * @param d
+     *            The day to check.
+     * @return temp The month in Integer form.
+     */
+    public int getMonthInt(int position, int d)
+    {
+        int temp;
+        if (position < 13 && d > 24)
+        {
+            temp = prevMonth;
+        }
+        else if (position > 29 && d < 7)
+        {
+            temp = nextMonth;
+        }
+        else
+        {
+            temp = month;
+        }
+        return temp;
+    }
+
 }

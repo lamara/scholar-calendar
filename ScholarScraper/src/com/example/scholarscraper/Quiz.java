@@ -4,6 +4,14 @@ import java.util.TimeZone;
 import java.text.ParseException;
 import java.util.Calendar;
 
+/**
+ * // -------------------------------------------------------------------------
+/**
+ *  Implementation of a Task, used when retrieving tasks from a scholar quiz page.
+ *
+ *  @author Alex Lamar, Paul Yea, Brianna Beitzel
+ *  @version May 5, 2013
+ */
 public class Quiz
     extends Task
 {
@@ -42,6 +50,10 @@ public class Quiz
         throws ParseException
     {
         Calendar c = Calendar.getInstance();
+        c.clear(); //clearing is important because any difference in seconds or milliseconds
+        //will mess up comparing two calendar's equality even if they are set
+        //to the same date/hour/minute
+
         String[] data = date.split("\\s+");
         String[] yearMonthDay = data[0].split("-");
         String[] hourMinute = data[1].split(":");
@@ -75,8 +87,6 @@ public class Quiz
         c.set(Calendar.HOUR, hour);
         c.set(Calendar.MINUTE, minute);
         c.set(Calendar.SECOND, 0);
-
-        System.out.println(c.getTime());
         return c;
     }
 

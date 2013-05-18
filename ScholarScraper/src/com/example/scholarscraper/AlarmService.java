@@ -1,5 +1,7 @@
 package com.example.scholarscraper;
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import java.util.Calendar;
 import java.io.File;
 import java.io.IOException;
@@ -16,48 +18,70 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.app.IntentService;
 
+// -------------------------------------------------------------------------
+/**
+ * creates a alarm that will go at a speicified time using pending intent so
+ * that a notification will be created at the specific time
+ *
+ * @author Paul Yea
+ * @version May 5, 2013
+ */
 public class AlarmService
     extends IntentService
 {
     public static final String CREATE   = "CREATE";
     public static final String POPULATE = "POPULATE";
+    public static final String CANCEL   = "CANCEL";
     private List<Course>       courses;
     private IntentFilter       matcher;
 
 
+    // ----------------------------------------------------------
+    /**
+     * Create a new AlarmService object.
+     */
     public AlarmService()
     {
         super("AlarmService");
         matcher = new IntentFilter();
         matcher.addAction(CREATE);
         matcher.addAction(POPULATE);
+        matcher.addAction(CANCEL);
     }
 
 
     protected void onHandleIntent(Intent intent)
     {
+        DbHelper db = new DbHelper(this);
         String str1 = intent.getAction();
         AlarmManager localAlarmManager =
             (AlarmManager)getSystemService("alarm");
         Calendar c = Calendar.getInstance();
         if (this.matcher.matchAction(str1))
         {
-            //Two possible actions, the "CREATE" action will add a single alarm
-            //based on the passed in intent data. The "POPULATE" alarm will
-            //create an alarm for every task in the course list. "POPULATE"
-            //is intended to be called on system reboot, as a system reboot
-            //deletes all previously queued alarms.
+            // Three possible actions, the "CREATE" action will add a single
+// alarm
+            // based on the passed in intent data. The "POPULATE" alarm will
+            // create an alarm for every task in the course list. "POPULATE"
+            // is intended to be called on system reboot, as a system reboot
+            // deletes all previously queued alarms.
+            // "CANCEL" will cancel all alarm in the system.
+
             if ("CREATE".equals(str1))
             {
-                int id = (int)intent.getLongExtra("alarm_id", -1L);
+                long id = intent.getLongExtra("alarm_id", -1L);
+                db.addAlarmId(new AlarmId((int)id));
                 long dueDate = intent.getLongExtra("dueDate", -1L);
+                String name = intent.getStringExtra("name");
                 localAlarmManager =
                     (AlarmManager)getSystemService(Context.ALARM_SERVICE);
                 Intent localIntent = new Intent(this, AlarmReceiver.class);
+                localIntent.putExtra("id", id);
+                localIntent.putExtra("name", name);
                 PendingIntent localPendingIntent =
                     PendingIntent.getBroadcast(
                         this,
-                        id,
+                        (int)id,
                         localIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT);
                 localAlarmManager.set(
@@ -66,13 +90,34 @@ public class AlarmService
                     localPendingIntent);
                 System.out.println("Alarm set");
             }
+            if ("CANCEL".equals(str1))
+            {
+                List<AlarmId> ids = db.getAllIds();
+                for (int x = 0; x < ids.size(); x++)
+                {
+                    Intent localIntent = new Intent(this, AlarmReceiver.class);
+                    PendingIntent localPendingIntent =
+                        PendingIntent.getBroadcast(
+                            this,
+                            ids.get(x).getAlarmId(),
+                            localIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT);
+                    localAlarmManager.cancel(localPendingIntent);
+                    db.deleteAlarmId(ids.get(x));
+                }
+            }
+
             if ("POPULATE".equals(str1))
             {
+                SharedPreferences sharedPref =
+                    PreferenceManager.getDefaultSharedPreferences(this);
                 for (int x = 0; x < this.courses.size(); x++)
                 {
-                    if (!retrieveCourses(this)) {
-                        System.out.println("Courses could not be retrieved while populating " +
-                        		          "alarm list");
+                    if (!retrieveCourses(this))
+                    {
+                        System.out
+                            .println("Courses could not be retrieved while populating "
+                                + "alarm list");
                         return;
                     }
                     List<Task> temp = courses.get(x).getAssignments();
@@ -80,15 +125,24 @@ public class AlarmService
                     {
                         Intent localIntent =
                             new Intent(this, AlarmReceiver.class);
+                        long id = System.currentTimeMillis();
+                        String name = temp.get(i).getName();
+                        localIntent.putExtra("id", id);
+                        localIntent.putExtra("name", name);
                         PendingIntent localPendingIntent =
                             PendingIntent.getBroadcast(
                                 this,
-                                0,
+                                (int)id,
                                 localIntent,
-                                134217728);
+                                PendingIntent.FLAG_UPDATE_CURRENT);
                         c = temp.get(i).getDueDate();
+                        int hour = c.get(Calendar.HOUR_OF_DAY);
+                        String delayPreference =
+                            sharedPref.getString("pref_notificationDelay", "0");
+                        int delay = Integer.parseInt(delayPreference);
+                        c.set(Calendar.HOUR_OF_DAY, hour - delay);
                         localAlarmManager.set(
-                            0,
+                            AlarmManager.RTC_WAKEUP,
                             c.getTimeInMillis(),
                             localPendingIntent);
                     }
@@ -98,6 +152,13 @@ public class AlarmService
     }
 
 
+    // ----------------------------------------------------------
+    /**
+     * retrieve list of courses
+     *
+     * @param context
+     * @return all courses in the app
+     */
     public boolean retrieveCourses(Context context)
     {
         File file = new File(context.getFilesDir(), "courses");

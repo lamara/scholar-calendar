@@ -15,6 +15,16 @@ import android.os.IBinder;
 import android.content.Intent;
 import android.app.Service;
 
+/**
+ * // -------------------------------------------------------------------------
+/**
+ *  A service used to run the Scholar update process
+ *  Can be run in the background, is generally set to run every few hours
+ *  by an alarm manager.
+ *
+ *  @author Alex Lamar, Paul Yea, Brianna Beitzel
+ *  @version May 5, 2013
+ */
 public class UpdateService extends Service  {
     private List<Course> courses;
     private Context context;
@@ -23,11 +33,12 @@ public class UpdateService extends Service  {
     private String password;
     private final String COURSE_FILE_NAME = "courses";
     private final String USER_FILE_NAME = "userData";
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         recoverCourses();
         recoverUsernamePassword();
-        listener = new ServiceUpdateListener();
+        listener = new UpdateServiceListener();
         context = this;
 
         if (courses == null || username == null || password == null) {
@@ -167,24 +178,20 @@ public class UpdateService extends Service  {
      *  @author Alex Lamar
      *  @version Apr 28, 2013
      */
-    public class ServiceUpdateListener extends UpdateListener {
+    public class UpdateServiceListener implements UpdateListener {
 
-        @Override
         public void mainPageLoaded(boolean result) {
             //Empty as we don't need the main page for this portion of the update
         }
 
-        @Override
         public void coursesLoaded() {
             //Empty as course list is already loaded
         }
 
-        @Override
         public void retrieveCourseLinks() {
             //Empty as course links should already be retrieved
         }
 
-        @Override
         public void retrieveAssignments(List<Course> courses) {
             //Empty, unneccessary
         }
@@ -192,13 +199,11 @@ public class UpdateService extends Service  {
         /**
          * Callback from the scholar scraper, signifies end of update process
          */
-        @Override
         public void updateFinished()
         {
             onUpdateFinished();
         }
 
-        @Override
         public void incrementProgress()
         {
             //Empty as service does not implement the progress bar

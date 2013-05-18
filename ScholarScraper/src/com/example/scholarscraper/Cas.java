@@ -27,7 +27,7 @@ import org.jsoup.select.Elements;
  * active for them to work.
  * 
  * @author Ethan Gaebel (egaebel)
- * @auther Alex Lamar (updated, removed unnecessary portions)
+ * @auther Alex Lamar (updated, removed unnecessary portions and made easier to use with android)
  */
 public final class Cas
 {

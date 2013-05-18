@@ -18,7 +18,17 @@ import java.util.List;
 import android.content.Intent;
 import android.content.Context;
 import android.content.BroadcastReceiver;
-
+/**
+ * // -------------------------------------------------------------------------
+/**
+ *  This class gets run every time the device launches. It is used to set a repeating
+ *  update service that will launch a scholar update process every three hours.
+ *
+ *  @author Alex Lamar
+ *  @author Paul Yea
+ *  @author Brianna Bietzel
+ *  @version May 5, 2013
+ */
 public class UpdateAtBootReceiver extends BroadcastReceiver {
 
     List<Course> courses;

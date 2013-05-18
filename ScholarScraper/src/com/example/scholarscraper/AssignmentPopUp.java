@@ -1,5 +1,8 @@
 package com.example.scholarscraper;
 
+import android.view.View;
+import android.widget.BaseAdapter;
+import android.widget.RelativeLayout;
 import java.util.GregorianCalendar;
 import android.widget.Button;
 import android.widget.TextView;
@@ -19,20 +22,25 @@ import android.app.Activity;
 
 // -------------------------------------------------------------------------
 /**
- * Write a one-sentence summary of your class here. Follow it with additional
- * details about its purpose, what abstraction it represents, and how to use it.
+ * Displays the assignments that are due on the specified date. Includes the due
+ * date, a description, and the name of the assignment.
  *
- * @author bribytz (brianna beitzel)
+ * @author Alex Lamar
+ * @author Paul Yea
+ * @author Brianna Beitzel
  * @version Apr 29, 2013
  */
 public class AssignmentPopUp
     extends Activity
 {
-    private List<Course>        courses          = null;
-    private List<Task>          assignments      = new ArrayList<Task>();
-    private TextView            assignmentText;
-    private String              text             = "No assignments to display.";
-    private static final String COURSE_FILE_NAME = "courses";
+    private List<Course>   courses     = new ArrayList<Course>();
+    private List<Task>     assignments = new ArrayList<Task>();
+    private RelativeLayout layout;
+    private Button         back;
+    private TextView       assignmentText;
+    private String         text        = "No assignments to display.";
+    private int            date;
+    private int            month;
 
 
     protected void onCreate(Bundle savedInstanceState)
@@ -40,16 +48,25 @@ public class AssignmentPopUp
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pop_up);
         Intent i = getIntent();
-        int date = i.getIntExtra("com.example.scholarscraper.Date", 0);
-        int month = i.getIntExtra("com.example.scholarscraper.Month", 0);
-        courses = (List<Course>) i.getSerializableExtra("com.example.scholarscraper.courses");
-        assignmentText = (TextView)this.findViewById(R.id.assignmentText);
+        date = i.getIntExtra("com.example.scholarscrapper.Date", 0);
+        month = i.getIntExtra("com.example.scholarscrapper.Month", 0);
+        courses =
+            (List<Course>)i
+                .getSerializableExtra("com.example.scholarscrapper.courses");
+        layout = (RelativeLayout)this.findViewById(R.id.layout);
+        back = (Button)this.findViewById(R.id.back);
+        back.setOnClickListener(new Button.OnClickListener() {
 
+            public void onClick(View v)
+            {
+                finish();
+            }
+        });
+
+        List<Task> tasks;
         if (courses == null) {
             courses = new ArrayList<Course>();
         }
-
-        List<Task> tasks;
         for (Course c : courses)
         {
             tasks = c.getAssignments();
@@ -58,9 +75,17 @@ public class AssignmentPopUp
                 assignments.add(tasks.get(x));
             }
         }
+        this.addAssignments();
+    }
 
+
+    // ----------------------------------------------------------
+    /**
+     * Adds all the assignments from the courses into the list.
+     */
+    public void addAssignments()
+    {
         String temp = " ";
-        //TODO Hey. Take this out before turning it in
         for (Task t : assignments)
         {
             if (t.getDueDate().get(Calendar.DATE) == date
@@ -68,67 +93,53 @@ public class AssignmentPopUp
             {
                 int m = t.getDueDate().get(Calendar.MONTH) + 1;
                 temp =
-                    temp + " Assignment: " + t.getName() + " Due Date: "
-                        + m + "/" + t.getDueDate().get(Calendar.DATE) + " Description:" + t.getDescription();
-                // TODO Yo. Maybe just add t to toDisplay and then get the names
-                // and stuff.
+                    temp + " Assignment: " + t.getName() + "\n" + " Due Date: "
+                        + m + "/" + t.getDueDate().get(Calendar.DATE) + "\n"
+                        + " Description: " + t.getDescription() + "\n" + "\n";
             }
         }
 
+        if (assignmentText != null)
+        {
+            layout.removeView(assignmentText);
+        }
         if (!temp.equals(" "))
         {
             text = temp;
+            assignmentText = new TextView(this);
             assignmentText.setText(text);
+            layout.addView(assignmentText);
         }
         else
         {
+            assignmentText = new TextView(this);
             assignmentText.setText(text);
+            layout.addView(assignmentText);
         }
     }
 
 
+    // ----------------------------------------------------------
     /**
-     * tries to retrieve the courselist from internal storage, returns true if
-     * successful, false if not
+     * Used for testing purposes. Returns the list of assignments.
+     *
+     * @return The list of assignments.
      */
-    private boolean recoverCourses()
+    public List<Task> getAssignments()
     {
-        File file = new File(getFilesDir(), COURSE_FILE_NAME);
-        try
-        {
-            InputStream inputStream = new FileInputStream(file);
-            InputStream buffer = new BufferedInputStream(inputStream);
-            ObjectInput input = new ObjectInputStream(buffer);
-            try
-            {
-                List<Course> recoveredCourses =
-                    (List<Course>)input.readObject();
-                System.out.println("courses retrieved");
+        return assignments;
+    }
 
-                for (Course course : recoveredCourses)
-                {
-                    System.out.println(course);
-                }
 
-                this.courses = recoveredCourses;
-
-                return true;
-
-            }
-            finally
-            {
-                input.close();
-            }
-        }
-        catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();
-            return false;
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            return false;
-        }
+    // ----------------------------------------------------------
+    /**
+     * Used for testing purposes. Sets the current list of assignments.
+     *
+     * @param list
+     *            A list of Tasks to use.
+     */
+    public void setAssignments(List<Task> list)
+    {
+        assignments = list;
     }
 }

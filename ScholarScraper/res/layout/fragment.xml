@@ -4,15 +4,16 @@
    android:layout_height="fill_parent"
    android:orientation="vertical" >
    <TextView
+       android:id="@+id/prompt"
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
-       android:text="Update Fragment: Enter a valid Scholar username and password" />
+       android:text="Enter a valid Scholar username and password" />
 
    <Button
        android:id="@+id/launch"
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
-       android:text="Launch" />
+       android:text="Retrieve Courses" />
 
    <EditText
        android:id="@+id/username"
@@ -30,18 +31,6 @@
        android:ems="10"
        android:inputType="textPassword" />
 
-   <TextView
-       android:id="@+id/textField"
-       android:layout_width="wrap_content"
-       android:layout_height="wrap_content"
-       android:text="TextView" />
-
-   <Button
-       android:id="@+id/assignment"
-       android:layout_width="match_parent"
-       android:layout_height="wrap_content"
-       android:text="Assignment Update" />
-
    <WebView
        android:id="@+id/webView1"
        android:layout_width="match_parent"
@@ -55,6 +44,13 @@
        android:layout_height="wrap_content"
        android:text="Update may take a while, please wait a few minutes."
        android:textSize="24sp" />
+
+   <TextView
+       android:id="@+id/updateComplete"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:text="Courses retreived, update finished"
+       android:textSize="17sp" />
 
    <ProgressBar
        android:id="@+id/progressBar"

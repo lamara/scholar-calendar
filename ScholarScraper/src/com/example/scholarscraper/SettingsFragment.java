@@ -1,19 +1,26 @@
 package com.example.scholarscraper;
 
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.app.DialogFragment;
-import android.app.ActionBar;
-import android.view.Menu;
-import android.app.Activity;
+import android.preference.PreferenceFragment;
 
-public class SettingsFragment extends DialogFragment
+/**
+ * // -------------------------------------------------------------------------
+/**
+ *  Launches the settings fragment, used to set the interval before an alarm
+ *  will trigger with respect to a task's due date.
+ *
+ *  @author Alex Lamar, Paul Yea, Brianna Beitzel
+ *  @version May 5, 2013
+ */
+public class SettingsFragment
+    extends PreferenceFragment
 {
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    @Override
+    public void onCreate(Bundle savedInstanceState)
     {
-        final View fragmentView = inflater.inflate(R.layout.settings, container, false);
-        return fragmentView;
+        super.onCreate(savedInstanceState);
+
+        // Load the preferences from an XML resource
+        addPreferencesFromResource(R.xml.settings);
     }
 }

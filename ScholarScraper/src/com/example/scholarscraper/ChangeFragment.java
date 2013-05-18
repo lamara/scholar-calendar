@@ -9,7 +9,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.view.ViewGroup;
-
+/**
+ * // -------------------------------------------------------------------------
+/**
+ *  A dialog popup that will prompt the user whether or not they want to change
+ *  the information they use to log in to Scholar. Called from the action bar.
+ *
+ *  @author Alex Lamar, Paul Yea, Brianna Beitzel
+ *  @version May 5, 2013
+ */
 public class ChangeFragment extends DialogFragment
 {
     private static final String COURSE_FILE = "courses";

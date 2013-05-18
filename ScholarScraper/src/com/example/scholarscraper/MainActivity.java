@@ -1,5 +1,6 @@
 package com.example.scholarscraper;
 
+import android.preference.PreferenceManager;
 import android.view.MenuItem;
 import android.app.ActionBar;
 import android.widget.BaseAdapter;
@@ -35,6 +36,18 @@ import android.app.FragmentManager;
 import android.os.Bundle;
 import android.view.Menu;
 
+// -------------------------------------------------------------------------
+/**
+ *
+ *  The main screen of the app.
+ *  Holds a calendar that displays assignments on their due dates, and also supports
+ *  an action bar that can displays different popup menus.
+ *
+ *  @author Alex Lamar
+ *  @author Paul Yea
+ *  @author Brianna Beitzel
+ *  @version May 5, 2013
+ */
 public class MainActivity
     extends Activity
 {
@@ -45,7 +58,7 @@ public class MainActivity
     private int                 p;
     private int                 displayedMonth;
     private String[]            months           = { "January", "Febuary",
-        "March", "April", "May", "June", "July", "August", "Spetember",
+        "March", "April", "May", "June", "July", "August", "September",
         "October", "November", "December"};
     private Button              next;
     private Button              previous;
@@ -59,13 +72,13 @@ public class MainActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        PreferenceManager.setDefaultValues(this, R.xml.settings, false);
 
         if (!recoverCourses()) {
             System.out.println("courses not retrieved");
             courses = null;
+            launchUpdateDialog();
         }
-
-        launchUpdateDialog();
 
         if (courses != null) {
             Intent service = new Intent(this, UpdateService.class);
@@ -102,9 +115,19 @@ public class MainActivity
                 long id)
             {
                 Intent i = new Intent(MainActivity.this, AssignmentPopUp.class);
-                i.putExtra("com.example.scholarscraper.Date", Integer.parseInt((String)gridView.getAdapter().getItem(position)));
-                i.putExtra("com.example.scholarscraper.Month", Integer.parseInt(((ImageAdapter)gridView.getAdapter()).getM()));
-                i.putExtra("com.example.scholarscraper.courses", (Serializable) courses);
+                i.putExtra(
+                    "com.example.scholarscrapper.Date",
+                    Integer.parseInt((String)gridView.getAdapter().getItem(
+                        position)));
+                i.putExtra(
+                    "com.example.scholarscrapper.Month",
+                    ((ImageAdapter)gridView.getAdapter()).getMonthInt(
+                        position,
+                        Integer.parseInt(((ImageAdapter)gridView.getAdapter())
+                            .getDayString(position))));
+                i.putExtra(
+                    "com.example.scholarscrapper.courses",
+                    (Serializable)courses);
                 MainActivity.this.startActivity(i);
             }
         });
@@ -194,7 +217,7 @@ public class MainActivity
               break;
           }
           case R.id.action_settings: {
-              launchSettingsDialog();
+              launchSettingsActivity();
               break;
           }
       }
@@ -215,12 +238,9 @@ public class MainActivity
     /**
      * Launches the settings popup dialog
      */
-    private void launchSettingsDialog() {
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.addToBackStack(null);
-
-        DialogFragment fragment = new SettingsFragment();
-        fragment.show(transaction, "settings");
+    private void launchSettingsActivity() {
+        Intent i = new Intent(this, SettingsActivity.class);
+        startActivity(i);
     }
 
     /**

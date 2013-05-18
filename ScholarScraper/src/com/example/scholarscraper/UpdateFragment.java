@@ -39,16 +39,16 @@ public class UpdateFragment
     extends DialogFragment
 {
 
-    WebView                  webView;
-    Context                  context;
-    ScholarScraper           scraperInstance;
-    EditText                 usernameEdit;
-    EditText                 passwordEdit;
-    TextView                 textField;
-    TextView                 updateNotification;
-    Button                   launch;
-    Button                   assignment;
-    ProgressBar              progressBar;
+    WebView webView;
+    Context context;
+    ScholarScraper scraperInstance;
+    EditText usernameEdit;
+    EditText passwordEdit;
+    TextView updateNotification;
+    TextView updateComplete;
+    TextView prompt;
+    Button launch;
+    ProgressBar progressBar;
     /*
      * index is used for keeping track of which courses are to be processed
      * during the update process
@@ -76,11 +76,12 @@ public class UpdateFragment
         webView =              (WebView) myFragmentView.findViewById(R.id.webView1);
         usernameEdit =        (EditText) myFragmentView.findViewById(R.id.username);
         passwordEdit =        (EditText) myFragmentView.findViewById(R.id.password);
-        textField =           (TextView) myFragmentView.findViewById(R.id.textField);
         updateNotification =  (TextView) myFragmentView.findViewById(R.id.updateNotification);
+        updateComplete =      (TextView) myFragmentView.findViewById(R.id.updateComplete);
+        prompt =              (TextView) myFragmentView.findViewById(R.id.prompt);
         launch =                (Button) myFragmentView.findViewById(R.id.launch);
-        assignment =            (Button) myFragmentView.findViewById(R.id.assignment);
         progressBar =      (ProgressBar) myFragmentView.findViewById(R.id.progressBar);
+
 
         context = getActivity();
 
@@ -88,9 +89,7 @@ public class UpdateFragment
 
         updateNotification.setVisibility(View.GONE);
         progressBar.setVisibility(View.GONE);
-
-        //final View progressView = inflater.inflate(R.layout.progress_layout, container,
-        //                                           false);
+        updateComplete.setVisibility(View.GONE);
 
         if (recoverUsernamePassword()) {
             usernameEdit.setText(username);
@@ -114,14 +113,7 @@ public class UpdateFragment
                             getActivity(),
                             webView,
                             listener);
-                    usernameEdit.setVisibility(View.GONE);
-                    passwordEdit.setVisibility(View.GONE);
-                    textField.setVisibility(View.GONE);
-
-                    launch.setVisibility(View.GONE);
-                    assignment.setVisibility(View.GONE);
-                    progressBar.setVisibility(View.VISIBLE);
-                    updateNotification.setVisibility(View.VISIBLE);
+                    switchLayout(true);
                     setCancelable(false);
                 }
                 catch (WrongLoginException e)
@@ -135,22 +127,33 @@ public class UpdateFragment
             }
         });
 
-        assignment.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v)
-            {
-                assignment.setEnabled(false);
-                username = usernameEdit.getText().toString();
-                password = passwordEdit.getText().toString();
-                new ScholarScraper.AssignmentRetriever().execute(
-                    courses,
-                    username,
-                    password,
-                    listener,
-                    context);
-            }
-        });
-
         return myFragmentView;
+    }
+
+    /**
+     * Switches the layout of the update fragment between the progress bar and the
+     * login form.
+     * @param result If true, switches to progress bar, if false, to the login form
+     */
+    private void switchLayout(boolean result) {
+        if (result) {
+            usernameEdit.setVisibility(View.GONE);
+            passwordEdit.setVisibility(View.GONE);
+            launch.setVisibility(View.GONE);
+            prompt.setVisibility(View.GONE);
+
+            progressBar.setVisibility(View.VISIBLE);
+            updateNotification.setVisibility(View.VISIBLE);
+        }
+        else {
+            usernameEdit.setVisibility(View.VISIBLE);
+            passwordEdit.setVisibility(View.VISIBLE);
+            launch.setVisibility(View.VISIBLE);
+            prompt.setVisibility(View.VISIBLE);
+
+            progressBar.setVisibility(View.GONE);
+            updateNotification.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -258,7 +261,7 @@ public class UpdateFragment
      * from hanging for too long, and is useful for organizing the update
      * process as a whole.
      */
-    public class UpdateFragmentListener extends UpdateListener
+    public class UpdateFragmentListener implements UpdateListener
     {
 
         /**
@@ -298,13 +301,6 @@ public class UpdateFragment
         {
             progressBar.setProgress(30);
             courses = scraperInstance.getCourses();
-            String courseString = "";
-            for (Course course : courses)
-            {
-                courseString += course.toString() + "\n";
-                System.out.println(course);
-            }
-            textField.setText(courseString);
             retrieveCourseLinks();
         }
 
@@ -346,6 +342,8 @@ public class UpdateFragment
         public void updateFinished()
         {
             progressBar.setProgress(100);
+            updateNotification.setVisibility(View.GONE);
+            updateComplete.setVisibility(View.VISIBLE);
             setCancelable(true);
             System.out.println("updateFinished() called");
             if (context instanceof MainActivity) {

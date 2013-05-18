@@ -6,8 +6,8 @@ import java.util.TimeZone;
 
 // -------------------------------------------------------------------------
 /**
- * Write a one-sentence summary of your class here. Follow it with additional
- * details about its purpose, what abstraction it represents, and how to use it.
+ * An implementation of a Task, used when retrieving tasks from an assignment
+ * page on Scholar.
  *
  * @author Alex Lamar
  * @author Paul Yea
@@ -52,6 +52,9 @@ public class Assignment
         throws ParseException
     {
         Calendar c = Calendar.getInstance();
+        c.clear(); //clearing is important because any difference in seconds or milliseconds
+                   //will mess up comparing two calendar's equality even if they are set
+                   //to the same date/hour/minute
 
         String[] data = date.split("\\s+"); // splits around whitespace
         String[] hourMinute = data[3].split(":");
@@ -86,8 +89,6 @@ public class Assignment
         c.set(Calendar.HOUR, hour);
         c.set(Calendar.MINUTE, minute);
         c.set(Calendar.SECOND, 0);
-
-        System.out.println(c.getTime());
         return c;
     }
 }

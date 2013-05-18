@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <ListPreference
+        android:defaultValue="@string/pref_delay_default"
+        android:entries="@array/pref_delay"
+        android:entryValues="@array/pref_delay_values"
+        android:key="pref_notificationDelay"
+        android:summary="@string/summary_list_preference"
+        android:title="@string/pref_notification_delay" />
+
+</PreferenceScreen>

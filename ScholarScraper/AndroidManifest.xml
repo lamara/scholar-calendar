@@ -7,9 +7,10 @@
     <uses-sdk
         android:minSdkVersion="14"
         android:targetSdkVersion="17" />
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_CALENDAR"/>
-    <uses-permission android:name="android.permission.WRITE_CALENDAR"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
@@ -26,35 +27,38 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
-        <activity
-             android:name = "com.example.scholarscraper.AssignmentPopUp" >     
+        <activity android:name="com.example.scholarscraper.SettingsActivity" />
+        <activity android:name="com.example.scholarscraper.AssignmentPopUp" >
         </activity>
-        
-        <service android:name="com.example.scholarscraper.UpdateService" android:label="Update Service">
+
+        <service
+            android:name="com.example.scholarscraper.UpdateService"
+            android:label="Update Service" >
             <intent-filter>
                 <action android:name="com.example.scholarscraper.UpdateService" />
             </intent-filter>
-        </service> 
-        
-        <service android:name="com.example.scholarscraper.AlarmService" android:label = "Alarm Service">
-            <intent-filter>
-                <action android:name="com.example.scholarscraper.AlarmService" />
-            </intent-filter>
         </service>
-        
-        <receiver
-            android:name="com.example.scholarscraper.receivers.UpdateAtBootReceiver"
-            android:enabled="true"
-            android:exported="true"
-            android:label="UpdateAtBootReceiver">
+
+        <receiver android:name="com.example.scholarscraper.AlarmSetter" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        
+        <receiver android:name="com.example.scholarscraper.AlarmReceiver" >
+        </receiver>
+
+        <service android:name="com.example.scholarscraper.AlarmService" >
+        </service>
+
+        <receiver
+            android:name="com.example.scholarscraper.receivers.UpdateAtBootReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="UpdateAtBootReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
-    
-    
 
 </manifest>

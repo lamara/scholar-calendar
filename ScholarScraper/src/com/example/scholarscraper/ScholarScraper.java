@@ -1,8 +1,9 @@
 package com.example.scholarscraper;
 
+import android.preference.PreferenceManager;
+import android.content.SharedPreferences;
 import java.util.Calendar;
 import android.content.Intent;
-import com.example.scholarscraper.CalendarSetter;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.SystemClock;
@@ -585,9 +586,6 @@ public class ScholarScraper
         private Map<String, String> casCookies;
         private UpdateListener    listener;
         private Context             context;
-        private CalendarSetter      calendarSetter;
-
-
         @Override
         protected void onPreExecute()
         {
@@ -704,12 +702,13 @@ public class ScholarScraper
 
                         Task assignment =
                             new Assignment(title, courseName, dueDate);
-                        if (course.addTask(assignment))
+                        int result = course.addTask(assignment);
+                        if (result == Course.ADDED ||
+                            result == Course.REPLACED)
                         {
-                            // assignment was added successfully, now do
-                            // operations on the assignment
-                            // to set notifications, add it to the calendar,
-                            // etc..
+                            // assignment was added, or replaced, successfully, now do
+                            // operations on the assignment+ to set notifications, add
+                            // it to the calendar, etc..
                             setAlarm(assignment);
                         }
                     }
@@ -767,10 +766,13 @@ public class ScholarScraper
                     String dueDate = data.get(i + 2).text();
 
                     Task quiz = new Quiz(title, courseName, dueDate);
-                    if (course.addTask(quiz)) {
-
-                        // quiz was added successfully, now do operations on the
-                        // quiz to set notifications, add it to the calendar, etc..
+                    int result = course.addTask(quiz);
+                    if (result == Course.ADDED ||
+                        result == Course.REPLACED)
+                    {
+                        // assignment was added, or replaced, successfully, now do
+                        // operations on the assignment to set notifications, add
+                        // it to the calendar, etc..
                         setAlarm(quiz);
                     }
                 }
@@ -786,16 +788,27 @@ public class ScholarScraper
          * Sets an alarm
          */
         private void setAlarm(Task task) {
-            Intent localIntent =
-                new Intent(context, AlarmService.class);
-            localIntent.putExtra("dueDate", task.getDueDate()
-                .getTimeInMillis());
-            localIntent.putExtra("title", task.getName());
-            localIntent.putExtra(
-                "alarm_id",
-                System.currentTimeMillis());
-            localIntent.setAction("CREATE");
-            context.startService(localIntent);
+            long current = System.currentTimeMillis();
+            System.out.println(current);
+            System.out.println(task.getDueDate().getTimeInMillis());
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+            if (task.getDueDate().getTimeInMillis() - current > 0)
+            {
+                Calendar c = Calendar.getInstance();
+                c = task.getDueDate();
+                int hour = c.get(Calendar.HOUR_OF_DAY);
+                String delayPreference =
+                    sharedPref.getString("pref_notificationDelay", "0");
+                int delay = Integer.parseInt(delayPreference);
+                c.set(Calendar.HOUR_OF_DAY, hour - delay);
+                Intent localIntent = new Intent(context, AlarmService.class);
+                localIntent.putExtra("dueDate", task.getDueDate()
+                    .getTimeInMillis());
+                localIntent.putExtra("alarm_id", System.currentTimeMillis());
+                localIntent.putExtra("name", task.getDescription());
+                localIntent.setAction("CREATE");
+                context.startService(localIntent);
+            }
         }
 
         /**

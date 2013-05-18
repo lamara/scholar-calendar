@@ -4,5 +4,9 @@
     <string name="app_name">ScholarScraper</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
+    <string name="pref_notification_delay">Delay</string>
+    <string name="summary_list_preference">Hours</string>
+    <string name="pref_delay_default">0</string>
+        
 
 </resources>

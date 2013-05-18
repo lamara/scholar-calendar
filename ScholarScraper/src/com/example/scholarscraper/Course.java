@@ -23,9 +23,12 @@ public class Course implements Serializable
     private final String mainUrl;
     private String       assignmentUrl;
     private String       quizUrl;
-    private boolean      hasLoaded;
 
     private List<Task>   assignments;
+
+    public static final int REPLACED = -1;
+    public static final int NOT_ADDED = 0;
+    public static final int ADDED = 1;
 
 
     /**
@@ -40,8 +43,6 @@ public class Course implements Serializable
         this.mainUrl = mainURL;
         this.setAssignmentUrl(null);
         this.setQuizUrl(null);
-
-        hasLoaded = false;
 
         assignments = new ArrayList<Task>();
     }
@@ -61,8 +62,6 @@ public class Course implements Serializable
         this.mainUrl = mainUrl;
         this.setAssignmentUrl(aUrl);
         this.setQuizUrl(qUrl);
-
-        hasLoaded = true;
     }
 
 
@@ -128,32 +127,12 @@ public class Course implements Serializable
 
 
     /**
-     * Sees if the classes assignment or quiz URLs have been searched for yet
-     *
-     * @return
-     */
-    public boolean hasLoaded()
-    {
-        return hasLoaded();
-    }
-
-    /**
      * Place a description of your method here.
      * @return assignment list
      */
     public List<Task> getAssignments()
     {
         return assignments;
-    }
-
-
-    /**
-     * Indicates that the current object has loaded its assignment or quiz URLs,
-     * even if none are present
-     */
-    public void setLoaded()
-    {
-        hasLoaded = true;
     }
 
 
@@ -179,7 +158,7 @@ public class Course implements Serializable
      * @return true if the task was added, false if it was rejected (due
      *         to duplication)
      */
-    public boolean addTask(Task task)
+    public int addTask(Task task)
     {
         for (int i = 0; i < assignments.size(); i++)
         {
@@ -188,16 +167,18 @@ public class Course implements Serializable
                 && !cmpr.equals(task))
             {
                 assignments.set(i, task);
-                return true;
+                System.out.println(task.getName() + " replaced and added to " + this);
+                return REPLACED;
             }
             else if (cmpr.equals(task))
             {
-                return false;
+                System.out.println(task.getName() + " not added, already present");
+                return NOT_ADDED;
             }
         }
         assignments.add(task);
         System.out.println(task.getName() + " added to " + this);
-        return true;
+        return ADDED;
     }
 
 }

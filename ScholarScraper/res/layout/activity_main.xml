@@ -1,5 +1,4 @@
 
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -14,24 +13,6 @@
         android:orientation="vertical" >
     </LinearLayout>
 
-    <Button
-        android:id="@+id/next"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/previous"
-        android:layout_centerHorizontal="true"
-        android:layout_marginLeft="18dp"
-        android:text="Next" />
-
-    <Button
-        android:id="@+id/previous"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="24dp"
-        android:layout_toRightOf="@+id/updateContainer"
-        android:text="Previous" />
-
     <TextView
         android:id="@+id/month"
         android:layout_width="wrap_content"
@@ -41,16 +22,36 @@
         android:text="April"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
+    <Button
+        android:id="@+id/next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/previous"
+        android:layout_alignBottom="@+id/previous"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="14dp"
+        android:text="Next" />
+
+    <Button
+        android:id="@+id/previous"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="23dp"
+        android:layout_toRightOf="@+id/updateContainer"
+        android:text="Previous" />
+
     <GridView
         android:id="@+id/gridview"
         android:layout_width="wrap_content"
         android:layout_height="200dp"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/month"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="44dp"
+        android:columnWidth="75dp"
         android:horizontalSpacing="10dp"
         android:numColumns="7"
-        android:verticalSpacing="10dp" >
+        android:verticalSpacing="7dp" >
     </GridView>
 
 </RelativeLayout>
