@@ -1,8 +1,8 @@
 package tests;
 
-import com.example.scholarscraper.Assignment;
-import com.example.scholarscraper.Quiz;
-import com.example.scholarscraper.Task;
+import com.scholarscraper.Assignment;
+import com.scholarscraper.Quiz;
+import com.scholarscraper.Task;
 import java.util.Calendar;
 import org.junit.Test;
 import org.junit.Before;

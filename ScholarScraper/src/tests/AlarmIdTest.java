@@ -1,6 +1,6 @@
 package tests;
 
-import com.example.scholarscraper.AlarmId;
+import com.scholarscraper.AlarmId;
 import junit.framework.TestCase;
 
 // -------------------------------------------------------------------------

@@ -1,8 +1,7 @@
 package com.example.scholarscraper.receivers;
 
-import com.example.scholarscraper.AlarmService;
-import com.example.scholarscraper.UpdateService;
-import com.example.scholarscraper.Course;
+import com.scholarscraper.AlarmService;
+import com.scholarscraper.Course;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import java.io.Serializable;
@@ -36,7 +35,7 @@ public class UpdateAtBootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         System.out.println("UpdateAtBootReciever started");
-
+        /*
         if ("android.intent.action.BOOT_COMPLETED".equals(intent.getAction())) {
             Intent service = new Intent(context, UpdateService.class);
 
@@ -48,11 +47,11 @@ public class UpdateAtBootReceiver extends BroadcastReceiver {
 
             alarm.cancel(pendingIntent); //removes already existing alarms (if they
             //exist) to prevent duplicates from happening
-            /* triggers update process every 3 hours */
+            //triggers update service every 3 hours
             alarm.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
                 AlarmManager.INTERVAL_HOUR * 3, pendingIntent);
         }
-
+        */
     }
 
     public boolean retrieveCourses(Context context) {

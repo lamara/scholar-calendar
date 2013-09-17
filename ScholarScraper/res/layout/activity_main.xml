@@ -1,57 +1,15 @@
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity" >
 
-    <LinearLayout
-        android:id="@+id/updateContainer"
-        android:layout_width="wrap_content"
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:orientation="vertical" >
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/month"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/updateContainer"
-        android:layout_centerHorizontal="true"
-        android:text="April"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
-    <Button
-        android:id="@+id/next"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/previous"
-        android:layout_alignBottom="@+id/previous"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="14dp"
-        android:text="Next" />
-
-    <Button
-        android:id="@+id/previous"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="23dp"
-        android:layout_toRightOf="@+id/updateContainer"
-        android:text="Previous" />
-
-    <GridView
-        android:id="@+id/gridview"
-        android:layout_width="wrap_content"
-        android:layout_height="200dp"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/month"
-        android:layout_marginTop="44dp"
-        android:columnWidth="75dp"
-        android:horizontalSpacing="10dp"
-        android:numColumns="7"
-        android:verticalSpacing="7dp" >
-    </GridView>
+        android:layout_centerVertical="true" >
+    </ListView>
 
 </RelativeLayout>
