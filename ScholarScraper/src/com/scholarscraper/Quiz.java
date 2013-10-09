@@ -16,29 +16,11 @@ import java.util.Calendar;
 public class Quiz
     extends Task
 {
+    private final static String NULL_CONSTANT = "n/a";
 
-    /**
-     * Create a new Quiz object.
-     * @param name
-     * @param description
-     * @param dueDate
-     */
-    public Quiz(String name, String description, Calendar dueDate)
+    public Quiz(String name, String courseName, String dueDate) throws ParseException
     {
-        super(name, description, dueDate);
-    }
-
-    /**
-     * Create a new Quiz object.
-     * @param name
-     * @param description
-     * @param dueDate
-     * @throws ParseException
-     */
-    public Quiz(String name, String description, String dueDate)
-        throws ParseException
-    {
-        super(name, description, dueDate);
+        super(name, courseName, dueDate);
     }
 
 
@@ -50,6 +32,10 @@ public class Quiz
     public Calendar parseDate(String date)
         throws ParseException
     {
+        if (date.equals(NULL_CONSTANT)) {
+            return null;
+        }
+
         Calendar c = Calendar.getInstance();
         c.clear(); //clearing is important because any difference in seconds or milliseconds
         //will mess up comparing two calendar's equality even if they are set

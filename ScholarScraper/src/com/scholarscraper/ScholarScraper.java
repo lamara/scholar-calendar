@@ -298,6 +298,12 @@ public class ScholarScraper extends AsyncTask<Object, Void, Integer>
         //if the CAS page ever changes and things start to break then the below
         //html parsing would be a good place to look
         Element lt = loginDoc.select("input[type=hidden]").first();
+        if (lt == null) {
+            //if the user is already logged in then the http will redirect to the
+            //main page, where there is no lt element. We can just return the
+            //page at this point.
+            return loginPage;
+        }
         System.out.println(lt);
 
         //fields used for post
@@ -339,13 +345,21 @@ public class ScholarScraper extends AsyncTask<Object, Void, Integer>
 
 
     private String readFromInputStream(InputStream stream) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-        String line = reader.readLine();
-        StringBuilder builder = new StringBuilder(line);
-        while ((line = reader.readLine()) != null) {
-            builder.append(line);
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            String line = reader.readLine();
+            StringBuilder builder = new StringBuilder(line);
+            while ((line = reader.readLine()) != null) {
+                builder.append(line);
+            }
+            return builder.toString();
         }
-        return builder.toString();
+        catch (IOException e) {
+            throw e;
+        }
+        finally {
+            stream.close();
+        }
     }
 
     /**

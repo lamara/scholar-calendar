@@ -1,11 +1,17 @@
 package com.scholarscraper.separators;
 
+import java.util.Date;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map;
 
 public class WeekSeparator
     extends DateSeparator
 {
+
+    private static final String DUE_THIS_WEEK = "Due this week";
+
+
     public WeekSeparator() {
         super();
         //set time to the beginning of the next day.
@@ -15,5 +21,19 @@ public class WeekSeparator
                           0,
                           0,
                           0);
+    }
+
+    @Override
+    protected String getSeparatorString()
+    {
+        Calendar current = Calendar.getInstance();
+        int beginningOffset = current.get(Calendar.DATE) - current.get(Calendar.DAY_OF_WEEK + 2);
+        Calendar beginOfWeek = current;
+        beginOfWeek.set(Calendar.DATE, beginningOffset);
+        SimpleDateFormat formatter = new SimpleDateFormat("MMMMM d");
+        String beginWeekString = formatter.format(beginOfWeek.getTime());
+        //the date class is awful god help our souls
+        String endWeekString = formatter.format(new Date(beginOfWeek.getTime().getTime() + SIX_DAYS_MILLI));
+        return DUE_THIS_WEEK + ", " + beginWeekString + LONG_DASH + endWeekString;
     }
 }

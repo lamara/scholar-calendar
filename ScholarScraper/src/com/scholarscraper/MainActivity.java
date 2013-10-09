@@ -1,5 +1,6 @@
 package com.scholarscraper;
 
+import android.widget.Toast;
 import android.widget.ListView;
 import android.widget.ArrayAdapter;
 import java.util.Map;
@@ -63,10 +64,8 @@ public class MainActivity
     private List<Course> courses;
     private ListView listView;
 
-
-    private String[] months = { "January", "Febuary",
-        "March", "April", "May", "June", "July", "August", "September",
-        "October", "November", "December"};
+    private static final String UPDATED = "updated";
+    private boolean hasUpdated = false;
 
     private String username;
     private String password;
@@ -74,7 +73,7 @@ public class MainActivity
 
     private static final String USER_FILE_NAME = "userData";
     private static final String COURSE_FILE_NAME = "courses";
-    private static final int NUM_SEPERATORS = 4;
+    private static final int PAST_DUE_CONSTANT = 86400000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -83,14 +82,20 @@ public class MainActivity
         setContentView(R.layout.activity_main);
         PreferenceManager.setDefaultValues(this, R.xml.settings, false);
         listView = (ListView) findViewById(R.id.listView);
+        if (savedInstanceState != null) {
+            hasUpdated = savedInstanceState.getBoolean(UPDATED);
+        }
 
         if (recoverUsernamePassword()) {
             //TODO populate "logged in as" textview
             if (recoverCourses()) {
                 populateListView();
             }
-            new ScholarScraper().execute(username, password, this);
-            //TODO launch an "updating.." blurb
+            if (!hasUpdated) {
+                new ScholarScraper().execute(username, password, this);
+                Toast.makeText(this, "Updating...", Toast.LENGTH_LONG).show();
+                hasUpdated = true;
+            }
         }
         else {
             launchLoginDialog(UpdateFragment.DEFAULT_PROMPT);
@@ -124,6 +129,16 @@ public class MainActivity
       }
       return true;
     }
+
+    /**
+     * mainly used for keeping track of whether or not the app has already done
+     * an update so we don't update every time the activity restarts its lifecycle
+     */
+    @Override
+    protected void onSaveInstanceState(Bundle bundle) {
+        super.onSaveInstanceState(bundle);
+        bundle.putBoolean(UPDATED, hasUpdated);
+      }
 
     /**
     * Launches the update popup dialog
@@ -169,6 +184,7 @@ public class MainActivity
      */
     public void onUpdateFinished(List<Course> courses) {
         this.courses = courses;
+        Toast.makeText(this, "Updated", Toast.LENGTH_LONG).show();
         populateListView();
     }
 
@@ -184,13 +200,12 @@ public class MainActivity
             launchLoginDialog("Invalid username or password.");
         }
         if (result == ScholarScraper.ERROR) {
-            // TODO notify that error happened, ask to hit refresh mechanism
+            Toast.makeText(this, "Update failed, try to refresh again", Toast.LENGTH_LONG).show();
         }
     }
 
     private void populateListView() {
-        ArrayAdapter<Listable> adapter = new ArrayAdapter<Listable>(this, R.layout.listview_element);
-        adapter.addAll(flattenCourseList(courses));
+        AssignmentAdapter adapter = new AssignmentAdapter(this, flattenCourseList(courses));
         listView.setAdapter(adapter);
     }
 
@@ -205,10 +220,18 @@ public class MainActivity
         flattenedList.add(new NextWeekSeparator());
         flattenedList.add(new DistantSeparator());
 
+        //add all tasks that aren't older than some constant
+        long currentTime = System.currentTimeMillis();
         for (Course course: courses) {
-            flattenedList.addAll(course.getAssignments());
+            for (Task task : course.getAssignments()) {
+                if (task.getDueDate() == null) {
+                    flattenedList.add(task);
+                }
+                else if (task.getDueDate().getTimeInMillis() >= currentTime - PAST_DUE_CONSTANT) {
+                    flattenedList.add(task);
+                }
+            }
         }
-
         //sort is stable so separators are guaranteed to precede tasks if
         //the two happen to share the same date.
         Collections.sort(flattenedList, new TaskListComparator());
@@ -222,8 +245,7 @@ public class MainActivity
         boolean previousElementWasSeparator = false;
         for (int i = 0; i < elements.size(); i++) {
             Listable element = elements.get(i);
-            Map<String, String> attributes = element.getAttributes();
-            if (attributes.get("separator") != null) {
+            if (element instanceof DateSeparator) {
                 if (previousElementWasSeparator) {
                     elements.remove(i - 1);
                     i--;

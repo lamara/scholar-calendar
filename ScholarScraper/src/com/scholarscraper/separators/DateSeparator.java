@@ -9,6 +9,9 @@ import java.util.Map;
 public abstract class DateSeparator implements Listable
 {
     protected static final String TIME_ZONE = "America/New_York";
+    protected static final String LONG_DASH = " \u2014 ";
+
+    protected static final int SIX_DAYS_MILLI = 518400000;
 
     protected Calendar calendar;
 
@@ -18,11 +21,11 @@ public abstract class DateSeparator implements Listable
         this.calendar = calendar;
     }
 
-    public Map<String, String> getAttributes()
-    {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("separator", "yes");
-        return map;
+    protected abstract String getSeparatorString();
+
+    @Override
+    public String toString() {
+        return getSeparatorString();
     }
 
     public Calendar getDueDate() {

@@ -7,6 +7,10 @@
     <string name="pref_notification_delay">Delay</string>
     <string name="summary_list_preference">Hours</string>
     <string name="pref_delay_default">0</string>
+    <string name="due_today">Due Today</string>
+    <string name="due_this_week">Due this week</string>
+    <string name="due_next_week">Due next week</string>
+    <string name="due_later">Due a while from now</string>
         
 
 </resources>

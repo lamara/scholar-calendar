@@ -1,11 +1,14 @@
 package com.scholarscraper.separators;
 
+import com.scholarscraper.R;
 import java.util.Calendar;
 import java.util.Map;
 
 public class DistantSeparator
     extends DateSeparator
 {
+    private static final String DUE_LATER = "Due a while from now";
+
     public DistantSeparator() {
         super();
         //set time to the beginning of two weeks from now
@@ -16,6 +19,12 @@ public class DistantSeparator
                           0,
                           0,
                           0);
+    }
+
+    @Override
+    protected String getSeparatorString()
+    {
+        return DUE_LATER;
     }
 
 }

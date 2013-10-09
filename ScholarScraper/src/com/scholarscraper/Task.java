@@ -40,11 +40,11 @@ public abstract class Task implements Serializable, Comparable<Task>, Listable
      * @param dueDate A string representation of the due date of a task
      * @throws ParseException
      */
-    public Task(String name, String description, String dueDate)
+    public Task(String name, String courseName, String dueDate)
         throws ParseException
     {
         this.name = name;
-        this.description = description;
+        this.courseName = courseName;
         this.dueDate = parseDate(dueDate);
     }
 
@@ -77,7 +77,10 @@ public abstract class Task implements Serializable, Comparable<Task>, Listable
     {
         this.name = name;
         this.description = description;
-        Calendar c = (Calendar) dueDate.clone(); //copy to keep class immutable
+        Calendar c = null;
+        if (dueDate != null) {
+            c = (Calendar) dueDate.clone(); //copy to keep class immutable
+        }
         this.dueDate = c;
     }
 
@@ -102,6 +105,9 @@ public abstract class Task implements Serializable, Comparable<Task>, Listable
     public Calendar getDueDate()
     {
         /* calendar objects are mutable so we have to be careful returning them */
+        if (dueDate == null) {
+            return null;
+        }
         return (Calendar) dueDate.clone();
     }
 

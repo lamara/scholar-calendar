@@ -2,14 +2,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#ffffff"
     tools:context=".MainActivity" >
 
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true" >
+        android:layout_alignParentTop="true"
+        android:layout_centerVertical="true"
+        android:divider="#E0E0E0"
+        android:dividerHeight="1dp"
+        android:listSelector="@drawable/list_selector" >
     </ListView>
 
 </RelativeLayout>

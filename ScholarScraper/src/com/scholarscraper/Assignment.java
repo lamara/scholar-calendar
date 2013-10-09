@@ -22,27 +22,14 @@ public class Assignment
     /**
      * Create a new Assignment object.
      * @param name
-     * @param description
-     * @param dueDate
-     */
-    public Assignment(String name, String description, Calendar dueDate)
-    {
-        super(name, description, dueDate);
-    }
-
-
-    // ----------------------------------------------------------
-    /**
-     * Create a new Assignment object.
-     * @param name
-     * @param description
+     * @param courseName
      * @param dueDate
      * @throws ParseException
      */
-    public Assignment(String name, String description, String dueDate)
+    public Assignment(String name, String courseName, String dueDate)
         throws ParseException
     {
-        super(name, description, dueDate);
+        super(name, courseName, dueDate);
     }
 
 

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#E0E0E0" >
+
+    <TextView
+        android:id="@+id/separatorText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:textColor="#808080"
+        android:padding="10dp"
+        android:shadowColor="#ffffff"
+        android:shadowDx="1"
+        android:shadowDy="2"
+        android:shadowRadius="0.4" />
+        android:text="TextView" />
+
+</RelativeLayout>
