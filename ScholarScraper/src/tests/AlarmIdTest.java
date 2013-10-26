@@ -6,7 +6,7 @@ import junit.framework.TestCase;
 // -------------------------------------------------------------------------
 /**
  * test alarm id
- *
+ * 
  * @author Paul Yea
  * @version May 5, 2013
  */
@@ -26,6 +26,7 @@ public class AlarmIdTest
     }
 
 
+    @Override
     public void setUp()
     {
         test = new AlarmId(45);

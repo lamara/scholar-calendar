@@ -10,30 +10,31 @@ import java.util.List;
  * URL, and Scholar Assignment/Quiz URLs Updating assignment and quiz URLS as
  * well as updating the assignment list is done by outside mutator methods in
  * the ScholarScraper class
- *
+ * 
  * @author Alex Lamar
  * @author Paul Yea
  * @author Brianna Beitzel
  * @version Apr 8, 2013
  */
 
-public class Course implements Serializable
+public class Course
+    implements Serializable
 {
-    private final String name;
-    private final String mainUrl;
-    private String       assignmentUrl;
-    private String       quizUrl;
+    private final String    name;
+    private final String    mainUrl;
+    private String          assignmentUrl;
+    private String          quizUrl;
 
-    private List<Task>   assignments;
+    private List<Task>      assignments;
 
-    public static final int REPLACED = -1;
+    public static final int REPLACED  = -1;
     public static final int NOT_ADDED = 0;
-    public static final int ADDED = 1;
+    public static final int ADDED     = 1;
 
 
     /**
      * Create a new Class object.
-     *
+     * 
      * @param name
      * @param mainURL
      */
@@ -50,7 +51,7 @@ public class Course implements Serializable
 
     /**
      * Create a new Class object.
-     *
+     * 
      * @param name
      * @param mainURL
      * @param aURL
@@ -128,6 +129,7 @@ public class Course implements Serializable
 
     /**
      * Place a description of your method here.
+     * 
      * @return assignment list
      */
     public List<Task> getAssignments()
@@ -147,32 +149,33 @@ public class Course implements Serializable
 
 
     /**
-     * Adds an task to the internal assignment list. Because tasks
-     * can possibly change in either status or due date, addTask will
-     * check if similar tasks (similar being two tasks that share
-     * the same name) have different due dates or status, and if so, will
-     * replace the old task with the new, updated task.
-     *
+     * Adds an task to the internal assignment list. Because tasks can possibly
+     * change in either status or due date, addTask will check if similar tasks
+     * (similar being two tasks that share the same name) have different due
+     * dates or status, and if so, will replace the old task with the new,
+     * updated task.
+     * 
      * @param task
      *            The task to add to the task list
-     * @return true if the task was added, false if it was rejected (due
-     *         to duplication)
+     * @return true if the task was added, false if it was rejected (due to
+     *         duplication)
      */
     public int addTask(Task task)
     {
         for (int i = 0; i < assignments.size(); i++)
         {
             Task cmpr = assignments.get(i);
-            if (cmpr.getName().equals(task.getName())
-                && !cmpr.equals(task))
+            if (cmpr.getName().equals(task.getName()) && !cmpr.equals(task))
             {
                 assignments.set(i, task);
-                System.out.println(task.getName() + " replaced and added to " + this);
+                System.out.println(task.getName() + " replaced and added to "
+                    + this);
                 return REPLACED;
             }
             else if (cmpr.equals(task))
             {
-                System.out.println(task.getName() + " not added, already present");
+                System.out.println(task.getName()
+                    + " not added, already present");
                 return NOT_ADDED;
             }
         }

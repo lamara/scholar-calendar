@@ -1,18 +1,18 @@
 package com.scholarscraper;
 
 import android.R;
-import android.support.v4.app.NotificationCompat;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.app.NotificationCompat;
 
 // -------------------------------------------------------------------------
 /**
  * receives intent from alarm service and create a notification to appear on the
  * status bar
- *
+ * 
  * @author Paul Yea
  * @version May 5, 2013
  */

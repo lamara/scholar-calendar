@@ -1,13 +1,13 @@
 package com.scholarscraper;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.BroadcastReceiver;
 
 // -------------------------------------------------------------------------
 /**
  * Recreate all the alarms when the system reboots
- *
+ * 
  * @author Paul Yea
  * @version May 5, 2013
  */

@@ -10,7 +10,7 @@ import org.junit.Test;
 // -------------------------------------------------------------------------
 /**
  * Unit tests for the Assignment class
- *
+ * 
  * @author Alex Lamar, Paul Yea, Brianna Beitzel
  * @version Apr 20, 2013
  */
@@ -33,7 +33,7 @@ public class AssignmentTest
     /**
      * Tests parsing a date of the format "Apr 23, 2013 11:55 pm" into a
      * calendar object
-     *
+     * 
      * @throws ParseException
      */
     @Test
@@ -54,7 +54,7 @@ public class AssignmentTest
     /**
      * Tests parsing a date of the format "Jan 25, 2013 6:00 pm" into a calendar
      * object
-     *
+     * 
      * @throws ParseException
      */
     @Test
@@ -70,10 +70,12 @@ public class AssignmentTest
         assertEquals(c.get(Calendar.MONTH), Calendar.JANUARY);
         assertEquals(c.get(Calendar.YEAR), 2013);
     }
+
+
     /**
-     * Tests parsing a date of the format "Aug 25, 2013 12:00 pm" into a calendar
-     * object
-     *
+     * Tests parsing a date of the format "Aug 25, 2013 12:00 pm" into a
+     * calendar object
+     * 
      * @throws ParseException
      */
     @Test
@@ -89,10 +91,12 @@ public class AssignmentTest
         assertEquals(c.get(Calendar.MONTH), Calendar.AUGUST);
         assertEquals(c.get(Calendar.YEAR), 2013);
     }
+
+
     /**
      * Tests parsing a date of the format "Jul 4, 2013 12:30 am" into a calendar
      * object
-     *
+     * 
      * @throws ParseException
      */
     @Test
@@ -108,10 +112,12 @@ public class AssignmentTest
         assertEquals(c.get(Calendar.MONTH), Calendar.JULY);
         assertEquals(c.get(Calendar.YEAR), 2013);
     }
+
+
     /**
      * Tests parsing a date of the format "Apr 18, 2013 2:00 am" into a calendar
      * object
-     *
+     * 
      * @throws ParseException
      */
     @Test
@@ -127,6 +133,5 @@ public class AssignmentTest
         assertEquals(c.get(Calendar.MONTH), Calendar.APRIL);
         assertEquals(c.get(Calendar.YEAR), 2013);
     }
-
 
 }

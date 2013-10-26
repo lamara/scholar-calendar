@@ -1,31 +1,21 @@
 package com.scholarscraper;
 
-import com.scholarscraper.R;
-import android.view.View;
-import android.widget.BaseAdapter;
-import android.widget.RelativeLayout;
-import java.util.GregorianCalendar;
-import android.widget.Button;
-import android.widget.TextView;
-import java.util.Calendar;
-import android.content.Intent;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.util.List;
-import java.util.ArrayList;
-import android.os.Bundle;
 import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 // -------------------------------------------------------------------------
 /**
  * Displays the assignments that are due on the specified date. Includes the due
  * date, a description, and the name of the assignment.
- *
+ * 
  * @author Alex Lamar
  * @author Paul Yea
  * @author Brianna Beitzel
@@ -44,6 +34,7 @@ public class AssignmentPopUp
     private int            month;
 
 
+    @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
@@ -65,7 +56,8 @@ public class AssignmentPopUp
         });
 
         List<Task> tasks;
-        if (courses == null) {
+        if (courses == null)
+        {
             courses = new ArrayList<Course>();
         }
         for (Course c : courses)
@@ -123,7 +115,7 @@ public class AssignmentPopUp
     // ----------------------------------------------------------
     /**
      * Used for testing purposes. Returns the list of assignments.
-     *
+     * 
      * @return The list of assignments.
      */
     public List<Task> getAssignments()
@@ -135,7 +127,7 @@ public class AssignmentPopUp
     // ----------------------------------------------------------
     /**
      * Used for testing purposes. Sets the current list of assignments.
-     *
+     * 
      * @param list
      *            A list of Tasks to use.
      */

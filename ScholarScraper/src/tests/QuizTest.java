@@ -9,29 +9,36 @@ import org.junit.Test;
 
 // -------------------------------------------------------------------------
 /**
- *  Unit tests for the Quiz class
- *
- *  @author Alex Lamar, Paul Yea, Brianna Beitzel
- *  @version Apr 20, 2013
+ * Unit tests for the Quiz class
+ * 
+ * @author Alex Lamar, Paul Yea, Brianna Beitzel
+ * @version Apr 20, 2013
  */
 
 public class QuizTest
 {
-    public QuizTest() {
-        //Empty test constructor
+    public QuizTest()
+    {
+        // Empty test constructor
     }
 
+
     @Before
-    public void setUp() {
-        //Empty test setup
+    public void setUp()
+    {
+        // Empty test setup
     }
+
 
     /**
      * Tests parsing a date of the format "2013-Jan-27 04:48 PM"
+     * 
      * @throws ParseException
      */
     @Test
-    public void testParseDate() throws ParseException {
+    public void testParseDate()
+        throws ParseException
+    {
         String date = "2013-Jan-27 04:48 PM";
         Calendar c = new Quiz(null, null, date).getDueDate();
         assertEquals(c.get(Calendar.MINUTE), 48);
@@ -41,12 +48,17 @@ public class QuizTest
         assertEquals(c.get(Calendar.MONTH), Calendar.JANUARY);
         assertEquals(c.get(Calendar.YEAR), 2013);
     }
+
+
     /**
      * Tests parsing a date of the format "2011-Mar-08 12:32 PM"
+     * 
      * @throws ParseException
      */
     @Test
-    public void testParseDate2() throws ParseException {
+    public void testParseDate2()
+        throws ParseException
+    {
         String date = "2011-Mar-08 12:32 PM";
         Calendar c = new Quiz(null, null, date).getDueDate();
         assertEquals(c.get(Calendar.MINUTE), 32);
@@ -56,12 +68,17 @@ public class QuizTest
         assertEquals(c.get(Calendar.MONTH), Calendar.MARCH);
         assertEquals(c.get(Calendar.YEAR), 2011);
     }
+
+
     /**
      * Tests parsing a date of the format "2013-Feb-17 09:14 PM"
+     * 
      * @throws ParseException
      */
     @Test
-    public void testParseDate3() throws ParseException {
+    public void testParseDate3()
+        throws ParseException
+    {
         String date = "2009-Feb-17 09:14 PM";
         Calendar c = new Quiz(null, null, date).getDueDate();
         assertEquals(c.get(Calendar.MINUTE), 14);
@@ -71,12 +88,17 @@ public class QuizTest
         assertEquals(c.get(Calendar.MONTH), Calendar.FEBRUARY);
         assertEquals(c.get(Calendar.YEAR), 2009);
     }
+
+
     /**
      * Tests parsing a date of the format "2013-Dec-01 12:00 AM"
+     * 
      * @throws ParseException
      */
     @Test
-    public void testParseDate4() throws ParseException {
+    public void testParseDate4()
+        throws ParseException
+    {
         String date = "2013-Dec-01 12:00 AM";
         Calendar c = new Quiz(null, null, date).getDueDate();
         assertEquals(c.get(Calendar.MINUTE), 0);

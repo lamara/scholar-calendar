@@ -1,34 +1,40 @@
 package com.scholarscraper.separators;
 
-import java.util.HashMap;
-import java.util.TimeZone;
-import java.util.Calendar;
 import com.scholarscraper.Listable;
-import java.util.Map;
+import java.util.Calendar;
+import java.util.TimeZone;
 
-public abstract class DateSeparator implements Listable
+public abstract class DateSeparator
+    implements Listable
 {
-    protected static final String TIME_ZONE = "America/New_York";
-    protected static final String LONG_DASH = " \u2014 ";
+    protected static final String TIME_ZONE      = "America/New_York";
+    protected static final String LONG_DASH      = " \u2014 ";
 
-    protected static final int SIX_DAYS_MILLI = 518400000;
+    protected static final int    SIX_DAYS_MILLI = 518400000;
 
-    protected Calendar calendar;
+    protected Calendar            calendar;
 
-    public DateSeparator() {
+
+    public DateSeparator()
+    {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone(TIME_ZONE));
         this.calendar = calendar;
     }
 
+
     protected abstract String getSeparatorString();
 
+
     @Override
-    public String toString() {
+    public String toString()
+    {
         return getSeparatorString();
     }
 
-    public Calendar getDueDate() {
-        return (Calendar) calendar.clone();
+
+    public Calendar getDueDate()
+    {
+        return (Calendar)calendar.clone();
     }
 }

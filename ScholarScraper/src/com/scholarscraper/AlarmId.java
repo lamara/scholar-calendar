@@ -2,11 +2,10 @@ package com.scholarscraper;
 
 /**
  * // -------------------------------------------------------------------------
-/**
- *  Stores the id for the intents/notifications
- *
- *  @author Paul Yea
- *  @version May 5, 2013
+ * /** Stores the id for the intents/notifications
+ * 
+ * @author Paul Yea
+ * @version May 5, 2013
  */
 public class AlarmId
 {
@@ -26,7 +25,9 @@ public class AlarmId
     // ----------------------------------------------------------
     /**
      * Create a new AlarmId object.
-     * @param id id of notification/intent
+     * 
+     * @param id
+     *            id of notification/intent
      */
     public AlarmId(int id)
     {
@@ -37,6 +38,7 @@ public class AlarmId
     // ----------------------------------------------------------
     /**
      * getter method for alarm
+     * 
      * @return the id
      */
     public int getAlarmId()
@@ -48,7 +50,9 @@ public class AlarmId
     // ----------------------------------------------------------
     /**
      * setter method for alarm
-     * @param id the new value of the id
+     * 
+     * @param id
+     *            the new value of the id
      */
     public void setId(int id)
     {

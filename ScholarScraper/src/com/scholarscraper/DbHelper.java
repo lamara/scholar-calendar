@@ -1,34 +1,35 @@
 package com.scholarscraper;
 
-import java.util.ArrayList;
-import android.database.Cursor;
-import java.util.List;
 import android.content.ContentValues;
-import android.database.sqlite.SQLiteDatabase;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
-* // -------------------------------------------------------------------------
-/**
-* Handle reading, adding, and deleting items to the database
-* @author Alex Lamar, Paul Yea, Brianna Beitzel
-* @version May 5, 2013
-*/
+ * // -------------------------------------------------------------------------
+ * /** Handle reading, adding, and deleting items to the database
+ * 
+ * @author Alex Lamar, Paul Yea, Brianna Beitzel
+ * @version May 5, 2013
+ */
 public class DbHelper
     extends SQLiteOpenHelper
 {
-    private static final int DATABASE_VERSION = 1;
-    private static final String DATABASE_NAME = "AlarmIdManager";
-    private static final String TABLE_CONTACTS = "alarmIds";
-    private static final String KEY_ID = "id";
+    private static final int    DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME    = "AlarmIdManager";
+    private static final String TABLE_CONTACTS   = "alarmIds";
+    private static final String KEY_ID           = "id";
 
 
     // ----------------------------------------------------------
     /**
-* Create a new DbHelper object.
-* @param context
-*/
+     * Create a new DbHelper object.
+     * 
+     * @param context
+     */
     public DbHelper(Context context)
     {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -60,9 +61,11 @@ public class DbHelper
 
     // ----------------------------------------------------------
     /**
-* Add an alarm to the database
-* @param id AlarmId that is being added to the databse
-*/
+     * Add an alarm to the database
+     * 
+     * @param id
+     *            AlarmId that is being added to the databse
+     */
     public void addAlarmId(AlarmId id)
     {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -75,9 +78,10 @@ public class DbHelper
 
     // ----------------------------------------------------------
     /**
-* return arrayList that contains all AlarmId in the database
-* @return arrayList that contains all AlarmId in the database
-*/
+     * return arrayList that contains all AlarmId in the database
+     * 
+     * @return arrayList that contains all AlarmId in the database
+     */
     public List<AlarmId> getAllIds()
     {
         List<AlarmId> contactList = new ArrayList<AlarmId>();
@@ -103,9 +107,11 @@ public class DbHelper
 
     // ----------------------------------------------------------
     /**
-* Delete an alarm from the database
-* @param id AlarmId that is being removed from the database
-*/
+     * Delete an alarm from the database
+     * 
+     * @param id
+     *            AlarmId that is being removed from the database
+     */
     public void deleteAlarmId(AlarmId id)
     {
         SQLiteDatabase db = this.getWritableDatabase();

@@ -9,12 +9,6 @@
        android:layout_height="wrap_content"
        android:text="Enter a valid Scholar username and password" />
 
-   <Button
-       android:id="@+id/launch"
-       android:layout_width="match_parent"
-       android:layout_height="wrap_content"
-       android:text="Retrieve Courses" />
-
    <EditText
        android:id="@+id/username"
        android:layout_width="match_parent"
@@ -31,11 +25,5 @@
        android:ems="10"
        android:inputType="textPassword" />
 
-   <WebView
-       android:id="@+id/webView1"
-       android:layout_width="match_parent"
-       android:layout_height="match_parent"
-       android:onClick="onLaunch"
-       android:visibility="gone" />
 
 </LinearLayout>

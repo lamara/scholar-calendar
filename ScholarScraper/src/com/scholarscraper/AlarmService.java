@@ -1,28 +1,28 @@
 package com.scholarscraper;
 
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import java.util.Calendar;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.io.ObjectInputStream;
-import java.io.ObjectInput;
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import android.content.Context;
 import android.app.AlarmManager;
+import android.app.IntentService;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.app.IntentService;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.util.Calendar;
+import java.util.List;
 
 // -------------------------------------------------------------------------
 /**
  * creates a alarm that will go at a speicified time using pending intent so
  * that a notification will be created at the specific time
- *
+ * 
  * @author Paul Yea
  * @version May 5, 2013
  */
@@ -50,6 +50,7 @@ public class AlarmService
     }
 
 
+    @Override
     protected void onHandleIntent(Intent intent)
     {
         DbHelper db = new DbHelper(this);
@@ -155,7 +156,7 @@ public class AlarmService
     // ----------------------------------------------------------
     /**
      * retrieve list of courses
-     *
+     * 
      * @param context
      * @return all courses in the app
      */

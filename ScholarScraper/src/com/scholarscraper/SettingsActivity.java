@@ -9,7 +9,7 @@ import android.preference.PreferenceActivity;
 // -------------------------------------------------------------------------
 /**
  * Setting for the application
- *
+ * 
  * @author Paul Yea
  * @version May 5, 2013
  */
@@ -20,6 +20,7 @@ public class SettingsActivity
     public static final String KEY_PREF_SYNC_CONN = "pref_notificationDelay";
 
 
+    @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
