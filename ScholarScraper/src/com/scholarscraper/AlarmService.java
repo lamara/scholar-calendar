@@ -1,5 +1,7 @@
 package com.scholarscraper;
 
+import com.scholarscraper.model.Course;
+import com.scholarscraper.model.Task;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;

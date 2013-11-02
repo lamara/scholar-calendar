@@ -1,7 +1,7 @@
 package tests;
 
 import static org.junit.Assert.*;
-import com.scholarscraper.Quiz;
+import com.scholarscraper.model.Quiz;
 import java.text.ParseException;
 import java.util.Calendar;
 import org.junit.Before;

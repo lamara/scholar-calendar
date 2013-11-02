@@ -1,5 +1,6 @@
 package com.scholarscraper;
 
+import com.scholarscraper.model.Course;
 import android.widget.Toast;
 import android.content.Context;
 import android.app.AlertDialog;

@@ -1,9 +1,9 @@
 package com.example.scholarscraper.receivers;
 
+import com.scholarscraper.model.Course;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import com.scholarscraper.Course;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;

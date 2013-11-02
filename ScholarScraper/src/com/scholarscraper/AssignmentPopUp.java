@@ -1,5 +1,7 @@
 package com.scholarscraper;
 
+import com.scholarscraper.model.Course;
+import com.scholarscraper.model.Task;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;

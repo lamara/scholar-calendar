@@ -1,5 +1,9 @@
 package com.scholarscraper;
 
+import com.scholarscraper.model.Assignment;
+import com.scholarscraper.model.Course;
+import com.scholarscraper.model.Quiz;
+import com.scholarscraper.model.Task;
 import android.content.Context;
 import android.os.AsyncTask;
 import com.example.casexample.exceptions.WrongLoginException;

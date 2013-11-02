@@ -1,6 +1,6 @@
 package com.scholarscraper.separators;
 
-import com.scholarscraper.Listable;
+import com.scholarscraper.listview.Listable;
 import java.util.Calendar;
 import java.util.TimeZone;
 

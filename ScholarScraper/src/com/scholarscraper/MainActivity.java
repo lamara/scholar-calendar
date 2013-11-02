@@ -1,5 +1,10 @@
 package com.scholarscraper;
 
+import com.scholarscraper.model.Course;
+import com.scholarscraper.model.Task;
+import com.scholarscraper.listview.Listable;
+import com.scholarscraper.listview.AssignmentAdapter;
+import com.scholarscraper.listview.TaskListComparator;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DialogFragment;

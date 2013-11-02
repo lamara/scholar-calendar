@@ -1,10 +1,10 @@
 package tests;
 
 import static org.junit.Assert.*;
-import com.scholarscraper.Assignment;
-import com.scholarscraper.Course;
-import com.scholarscraper.Quiz;
-import com.scholarscraper.Task;
+import com.scholarscraper.model.Assignment;
+import com.scholarscraper.model.Course;
+import com.scholarscraper.model.Quiz;
+import com.scholarscraper.model.Task;
 import java.text.ParseException;
 import org.junit.Before;
 import org.junit.Test;
