@@ -1,19 +1,19 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="fill_parent"
     android:background="#ffffff"
     tools:context=".MainActivity" >
 
-    <ListView
+    <com.scholarscraper.listview.PullToRefreshListView
         android:id="@+id/listView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:layout_alignParentTop="true"
         android:layout_centerVertical="true"
         android:divider="#E0E0E0"
         android:dividerHeight="1dp"
         android:listSelector="@drawable/list_selector" >
-    </ListView>
+    </com.scholarscraper.listview.PullToRefreshListView>
 
 </RelativeLayout>

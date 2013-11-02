@@ -20,7 +20,8 @@
         android:theme="@style/Theme" >
         <activity
             android:name="com.scholarscraper.MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

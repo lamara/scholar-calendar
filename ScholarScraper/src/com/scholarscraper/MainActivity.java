@@ -1,5 +1,7 @@
 package com.scholarscraper;
 
+import com.scholarscraper.listview.PullToRefreshListView.OnRefreshListener;
+import com.scholarscraper.listview.PullToRefreshListView;
 import com.scholarscraper.model.Course;
 import com.scholarscraper.model.Task;
 import com.scholarscraper.listview.Listable;
@@ -46,8 +48,10 @@ import java.util.List;
 public class MainActivity
     extends Activity
 {
+    private ScholarScraper updateInstance;
+
     private List<Course>        courses;
-    private ListView            listView;
+    private PullToRefreshListView            listView;
     private ActionBar           actionBar;
 
     private boolean isLoggedIn = false;
@@ -60,7 +64,7 @@ public class MainActivity
 
     public static final String  USER_FILE_NAME    = "userData";
     public static final String  COURSE_FILE_NAME  = "courses";
-    private static final int    PAST_DUE_CONSTANT = 86400000;
+    private static final int    PAST_DUE_CONSTANT = 86400000; //1 day in milli
     public static final int     LOGGED_IN_STATE_INDEX = 0;
 
 
@@ -70,14 +74,28 @@ public class MainActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         PreferenceManager.setDefaultValues(this, R.xml.settings, false);
-        listView = (ListView)findViewById(R.id.listView);
         actionBar = getActionBar();
-
+        listView = (PullToRefreshListView)findViewById(R.id.listView);
+        listView.setOnRefreshListener(new OnRefreshListener() {
+            public void onRefresh() {
+                if (isLoggedIn) {
+                    update();
+                }
+                else {
+                    listView.onRefreshComplete();
+                }
+            }
+        });
+        resetListView(); //has the side effect of "instantiating" the listview
+                         //by adding an empty adapter to it, pull-to-refresh
+                         //won't work on a listview that has not been set at all.
         if (savedInstanceState != null)
         {
+            //TODO currently screen orientation change is disabled because maintaining
+            //the listview "refreshing" state between changes is nontrivial.
+            //hasUpdated makes sure app doesn't constantly update after each orientation change.
             hasUpdated = savedInstanceState.getBoolean(UPDATED);
         }
-
         if (recoverUsernamePassword())
         {
             // TODO populate "logged in as" textview
@@ -88,7 +106,7 @@ public class MainActivity
             }
             if (!hasUpdated)
             {
-                new ScholarScraper().execute(username, password, this);
+                update();
                 Toast.makeText(this, "Updating...", Toast.LENGTH_LONG).show();
                 hasUpdated = true;
             }
@@ -202,8 +220,18 @@ public class MainActivity
      * Callback by the async task retriever, passes a list of courses with fully
      * updated assignment info.
      */
-    public void onUpdateFinished(List<Course> courses)
+    public void onUpdateFinished(List<Course> courses, int result)
     {
+        listView.onRefreshComplete();
+        if (result == ScholarScraper.IO_ERROR) {
+            //its possible for the update to finish but for course saving to still error out
+            //this is a bad situation to be in because now the user state is potentially corrupted
+            //so we are going to reset the state of the app. (this really shouldn't happen except
+            //under bad IO circumstances beyond our control).
+            destroyData();
+
+        }
+        isLoggedIn = true;
         this.courses = courses;
         Toast.makeText(this, "Updated", Toast.LENGTH_LONG).show();
         populateListView();
@@ -216,12 +244,14 @@ public class MainActivity
      */
     public void onUpdateCancelled(int result, Exception e)
     {
+        System.out.println("Update was cancelled");
         //TODO handle exception (with a null check as it can come in null)
+        listView.onRefreshComplete();
         if (result == ScholarScraper.WRONG_LOGIN)
         {
             username = null;
             password = null;
-            saveUsernamePassword();
+            saveUsernamePassword(username, password);
             launchLoginDialog("Invalid username or password.");
         }
         if (result == ScholarScraper.ERROR)
@@ -233,9 +263,35 @@ public class MainActivity
         }
     }
 
-    public void depopulateListView() {
-        //TODO pass an empty adapter into the listview, should be called whenever
-        //a user logs out of the app.
+    public void setUsernamePassword(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    /**
+     * Starts a new update process
+     */
+    public void update() {
+        cancelUpdate(); //cancels current update, if there is one in progress
+        listView.setRefreshing();
+        updateInstance = new ScholarScraper();
+        updateInstance.execute(username, password, this);
+    }
+
+    /**
+     * Cancel the current update if one is currently running
+     */
+    public void cancelUpdate() {
+        if (updateInstance != null) {
+            updateInstance.cancel(true);
+            updateInstance = null;
+            listView.onRefreshComplete();
+        }
+    }
+
+    public void resetListView() {
+        AssignmentAdapter adapter = new AssignmentAdapter(this, new Listable[0]);
+        listView.setAdapter(adapter);
     }
 
 
@@ -281,7 +337,7 @@ public class MainActivity
         Collections.sort(flattenedList, new TaskListComparator());
 
         // we don't want two separators to appear together with nothing in
-// between them
+        // between them
         removeSequentialSeparators(flattenedList);
         return flattenedList.toArray(new Listable[0]);
     }
@@ -365,13 +421,14 @@ public class MainActivity
      * Saves the user's username and password to internal storage, currently
      * stores in plain text, this needs to change before distribution
      */
-    private boolean saveUsernamePassword()
+    public boolean saveUsernamePassword(String username, String password)
     {
         if (username == null || password == null)
         {
             System.out.println("username/password were not saved (null)");
             return false;
         }
+        setUsernamePassword(username, password);
         File file = new File(this.getFilesDir(), USER_FILE_NAME);
         try
         {
@@ -439,6 +496,23 @@ public class MainActivity
             e.printStackTrace();
             return false;
         }
+    }
+
+
+
+    //TODO there are some concurrency issues right now, lets push read/write methods
+    //into a static synchronized class so the app can't read/write at the same time.
+    /**
+     * Destroys internal data state, effectively resetting the state of the app
+     */
+    public void destroyData()
+    {
+        isLoggedIn = false;
+        setUsernamePassword(null, null);
+        File courseFile = new File(this.getFilesDir(), MainActivity.COURSE_FILE_NAME);
+        File userFile = new File(this.getFilesDir(), MainActivity.USER_FILE_NAME);
+        courseFile.delete();
+        userFile.delete();
     }
 
 }

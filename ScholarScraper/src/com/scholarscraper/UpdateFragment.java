@@ -86,10 +86,11 @@ public class UpdateFragment
         builder.setCustomTitle(title)
                .setPositiveButton("Log in", new DialogInterface.OnClickListener() {
                    public void onClick(DialogInterface dialog, int id) {
+                       MainActivity mainActivity = (MainActivity) context;
                        username = usernameEdit.getText().toString();
                        password = passwordEdit.getText().toString();
-                       saveUsernamePassword();
-                       new ScholarScraper().execute(username, password, getActivity());
+                       mainActivity.saveUsernamePassword(username, password);
+                       mainActivity.update();
                        Toast.makeText(context, "Updating...", Toast.LENGTH_LONG).show();
                        dismiss();
                    }

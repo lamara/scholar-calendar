@@ -48,7 +48,10 @@ public class ChangeFragment
         builder.setCustomTitle(title)
                .setPositiveButton("Log out", new DialogInterface.OnClickListener() {
                    public void onClick(DialogInterface dialog, int id) {
-                       destroyData();
+                       MainActivity mainActivity = (MainActivity) context;
+                       mainActivity.destroyData();
+                       mainActivity.cancelUpdate(); //cancel an update if it is in progress
+                       mainActivity.resetListView();
                        dismiss();
                        launchLoginDialog(UpdateFragment.DEFAULT_PROMPT);
                    }
@@ -61,17 +64,6 @@ public class ChangeFragment
         builder.setCustomTitle(title);
         // Create the AlertDialog object and return it
         return builder.create();
-    }
-
-    /**
-     * Destroys internal data state, effectively resetting the state of the app
-     */
-    private void destroyData()
-    {
-        File courseFile = new File(context.getFilesDir(), MainActivity.COURSE_FILE_NAME);
-        File userFile = new File(context.getFilesDir(), MainActivity.USER_FILE_NAME);
-        courseFile.delete();
-        userFile.delete();
     }
 
     /**

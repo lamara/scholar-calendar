@@ -1,5 +1,6 @@
 package com.scholarscraper;
 
+import java.io.IOException;
 import com.scholarscraper.model.Assignment;
 import com.scholarscraper.model.Course;
 import com.scholarscraper.model.Quiz;
@@ -35,6 +36,8 @@ public class ScholarScraper
     public static final int SUCCESSFUL  = 10;
     public static final int WRONG_LOGIN = 11;
     public static final int ERROR       = 12;
+    public static final int IO_ERROR    = 13;
+    public static final int CANCELLED   = 14;
 
     Context                 context;
     List<Course>            courses;
@@ -63,7 +66,9 @@ public class ScholarScraper
             System.out.println("Printing main page, logged in successfully: \n" + mainPage);
             courses = retrieveCourses(mainPage, getSemester());
             retrieveTasks(courses);
-            saveCourses();
+            if (isCancelled()) {
+                return CANCELLED;
+            }
         }
         catch (WrongLoginException e)
         {
@@ -76,7 +81,7 @@ public class ScholarScraper
         {
             exception = e;
             cancel(true);
-            return ERROR;
+            return IO_ERROR;
         }
         catch (ParseException e)
         {
@@ -91,9 +96,15 @@ public class ScholarScraper
     @Override
     public void onPostExecute(Integer result)
     {
-        if (context != null && context instanceof MainActivity)
-        {
-            ((MainActivity) context).onUpdateFinished(courses);
+        try {
+            saveCourses();
+        }
+        catch (IOException e) {
+            result = IO_ERROR;
+            e.printStackTrace();
+        }
+        if (context != null && context instanceof MainActivity) {
+            ((MainActivity) context).onUpdateFinished(courses, result);
         }
     }
 
@@ -101,6 +112,12 @@ public class ScholarScraper
     @Override
     public void onCancelled(Integer result)
     {
+        if (result == null) {
+            result = CANCELLED; //whenever asynctask.cancel() gets called
+                                //it might pass a null integer in if called after
+                                //the saveCourses step gets executed.
+                                //right now this is mainly to safeguard against null
+        }
         if (context != null && context instanceof MainActivity)
         {
             ((MainActivity) context).onUpdateCancelled(result, exception);
@@ -455,28 +472,6 @@ public class ScholarScraper
         }
     }
 
-
-    /**
-     * Converts a given cookie map into a form consistent with Set-Cookie HTTP
-     * response header.
-     *
-     * @param cookies
-     *            A cookie map to be translated to a string of cookies
-     * @return A string of form "name1=value1; name2=value2;" etc...
-     */
-    private String translateCookieMap(Map<String, String> cookies)
-    {
-
-        StringBuffer cookieString = new StringBuffer();
-        for (Entry<String, String> cookie : cookies.entrySet())
-        {
-            cookieString.append(cookie.getKey() + "=" + cookie.getValue()
-                + "; ");
-        }
-        return cookieString.toString();
-    }
-
-
     /**
      * Creates a url encoded string of post data from a given map of properties
      *
@@ -488,8 +483,15 @@ public class ScholarScraper
         StringBuilder strBuilder = new StringBuilder();
         for (Entry<String, String> entry : properties.entrySet())
         {
+            String value = entry.getValue();
+            if (value == null) {
+                value = ""; //TODO sometimes we get a null key value in processing, figure out
+                            //why this happens
+                System.out.println("null key value found when building post data" +
+                		           " for key " + entry.getKey());
+            }
             strBuilder.append(entry.getKey()).append("=")
-                .append(URLEncoder.encode(entry.getValue(), "UTF-8"))
+                .append(URLEncoder.encode(value, "UTF-8"))
                 .append("&");
         }
         return strBuilder.toString();
