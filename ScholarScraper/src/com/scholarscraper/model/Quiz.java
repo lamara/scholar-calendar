@@ -8,7 +8,7 @@ import java.util.TimeZone;
  * // -------------------------------------------------------------------------
  * /** Implementation of a Task, used when retrieving tasks from a scholar quiz
  * page.
- * 
+ *
  * @author Alex Lamar, Paul Yea, Brianna Beitzel
  * @version May 5, 2013
  */

@@ -1,5 +1,11 @@
 package com.scholarscraper;
 
+import com.scholarscraper.alarm.AlarmSetter;
+import java.util.Calendar;
+import android.os.SystemClock;
+import android.app.AlarmManager;
+import android.content.Context;
+import android.app.PendingIntent;
 import com.scholarscraper.listview.PullToRefreshListView.OnRefreshListener;
 import com.scholarscraper.listview.PullToRefreshListView;
 import com.scholarscraper.model.Course;
@@ -103,6 +109,7 @@ public class MainActivity
             if (recoverCourses())
             {
                 populateListView();
+                AlarmSetter.setNextAlarm(this);
             }
             if (!hasUpdated)
             {
@@ -235,6 +242,7 @@ public class MainActivity
         this.courses = courses;
         Toast.makeText(this, "Updated", Toast.LENGTH_LONG).show();
         populateListView();
+        AlarmSetter.setNextAlarm(this);
     }
 
 
@@ -245,7 +253,7 @@ public class MainActivity
     public void onUpdateCancelled(int result, Exception e)
     {
         System.out.println("Update was cancelled");
-        //TODO handle exception (with a null check as it can come in null)
+        //TODO handle exception that comes in (with a null check as it can come in null)
         listView.onRefreshComplete();
         if (result == ScholarScraper.WRONG_LOGIN)
         {

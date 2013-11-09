@@ -54,6 +54,9 @@ public class ScholarScraper
     }
 
 
+    //TODO there isn't a timeout currently, if the user's internet is slow or
+    //something causes the update to hang then the task may not finish updating.
+    //add a timeout somewhere between 30-60 seconds
     @Override
     protected Integer doInBackground(Object... params)
     {
@@ -171,7 +174,6 @@ public class ScholarScraper
             //that seperates courses that belong to different semesters, however if it is a user's
             //first semester then that identifier doesn't exist. If this is the case then we need
             //different logic to get the user's course information.
-            //TODO add that seperate logic
             if (line.contains("<h4>" + semester + "</h4>"))
             {
                 bufferedReader.readLine(); // skips over one element that we don't want
@@ -291,13 +293,14 @@ public class ScholarScraper
             String dueDate = data.get(i + 2).text();
 
             Task quiz = new Quiz(title, courseName, dueDate);
-            int result = course.addTask(quiz);
-            if (result == Course.ADDED || result == Course.REPLACED)
+            long result = course.addTask(quiz);
+            if (result != Course.ADDED && result != Course.NOT_ADDED)
             {
-                // assignment was added, or replaced, successfully, now do
-                // operations on the assignment to set notifications, add
-                // it to the calendar, etc..
-                /* TODO add alarm handling */
+                // Quiz was replaced due to an update to its due date.
+                // In this case, course.addTask() returns the replaced quiz's
+                // unique ID, which we can use to cancel the old quiz's
+                // out of date alarm.
+                /* TODO add alarm canceling */
             }
         }
     }
@@ -329,13 +332,14 @@ public class ScholarScraper
             // String status = statuses.get(i).text();
 
             Task assignment = new Assignment(title, courseName, dueDate);
-            int result = course.addTask(assignment);
-            if (result == Course.ADDED || result == Course.REPLACED)
+            long result = course.addTask(assignment);
+            if (result != Course.ADDED && result != Course.NOT_ADDED)
             {
-                // assignment was added, or replaced, successfully, now do
-                // operations on the assignment+ to set notifications, add
-                // it to the calendar, etc..
-                /* TODO add alarm handling */
+                // Assignment was replaced due to an update to its due date.
+                // In this case, course.addTask() returns the replaced assignment's
+                // unique ID, which we can use to cancel the old assignment's
+                // out of date alarm.
+                /* TODO add alarm canceling */
             }
         }
     }

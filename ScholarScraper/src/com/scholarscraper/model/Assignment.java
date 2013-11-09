@@ -8,7 +8,7 @@ import java.util.TimeZone;
 /**
  * An implementation of a Task, used when retrieving tasks from an assignment
  * page on Scholar.
- * 
+ *
  * @author Alex Lamar
  * @author Paul Yea
  * @author Brianna Beitzel
@@ -20,7 +20,7 @@ public class Assignment
     // ----------------------------------------------------------
     /**
      * Create a new Assignment object.
-     * 
+     *
      * @param name
      * @param courseName
      * @param dueDate

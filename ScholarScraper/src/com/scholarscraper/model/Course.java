@@ -10,7 +10,7 @@ import java.util.List;
  * URL, and Scholar Assignment/Quiz URLs Updating assignment and quiz URLS as
  * well as updating the assignment list is done by outside mutator methods in
  * the ScholarScraper class
- * 
+ *
  * @author Alex Lamar
  * @author Paul Yea
  * @author Brianna Beitzel
@@ -27,14 +27,13 @@ public class Course
 
     private List<Task>      assignments;
 
-    public static final int REPLACED  = -1;
     public static final int NOT_ADDED = 0;
     public static final int ADDED     = 1;
 
 
     /**
      * Create a new Class object.
-     * 
+     *
      * @param name
      * @param mainURL
      */
@@ -51,7 +50,7 @@ public class Course
 
     /**
      * Create a new Class object.
-     * 
+     *
      * @param name
      * @param mainURL
      * @param aURL
@@ -129,7 +128,7 @@ public class Course
 
     /**
      * Place a description of your method here.
-     * 
+     *
      * @return assignment list
      */
     public List<Task> getAssignments()
@@ -154,23 +153,28 @@ public class Course
      * (similar being two tasks that share the same name) have different due
      * dates or status, and if so, will replace the old task with the new,
      * updated task.
-     * 
+     *
      * @param task
      *            The task to add to the task list
-     * @return true if the task was added, false if it was rejected (due to
-     *         duplication)
+     * @return Either ADDED or NOT_ADDED, unless the task already exists in the
+     *         courselist but needs to be replaced due to an update to its information,
+     *         in which case returns the to-be-replaced task's Unique ID.
      */
-    public int addTask(Task task)
+    public long addTask(Task task)
     {
         for (int i = 0; i < assignments.size(); i++)
         {
             Task cmpr = assignments.get(i);
-            if (cmpr.getName().equals(task.getName()) && !cmpr.equals(task))
+            if (cmpr.getName().equals(task.getName()) &&
+                cmpr.getCourseName().equals(task.getCourseName()) &&
+                !cmpr.equals(task))
             {
+                //Happens if a task's due date has changed, but otherwise the task
+                //is still in the system.
                 assignments.set(i, task);
                 System.out.println(task.getName() + " replaced and added to "
                     + this);
-                return REPLACED;
+                return cmpr.getUniqueId();
             }
             else if (cmpr.equals(task))
             {
