@@ -60,23 +60,27 @@ public class MainActivity
     private PullToRefreshListView            listView;
     private ActionBar           actionBar;
 
-    private boolean isLoggedIn = false;
-
     private static final String UPDATED           = "updated";
     private boolean             hasUpdated        = false;
+    private boolean             isLoggedIn        = false;
+    private boolean             coursesRecovered  = false;
 
     private String              username;
     private String              password;
 
     public static final String  USER_FILE_NAME    = "userData";
     public static final String  COURSE_FILE_NAME  = "courses";
-    private static final int    PAST_DUE_CONSTANT = 86400000; //1 day in milli
+    private static final int    PAST_DUE_CONSTANT = 24 * 3600 * 1000; //1 day in milli
     public static final int     LOGGED_IN_STATE_INDEX = 0;
 
+
+    //TODO change logging app wide to stop using system.out, also remove any
+    //logging that was previously used for debugging purposes
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        /* --------- Initial setup ----------------*/
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         PreferenceManager.setDefaultValues(this, R.xml.settings, false);
@@ -84,7 +88,10 @@ public class MainActivity
         listView = (PullToRefreshListView)findViewById(R.id.listView);
         listView.setOnRefreshListener(new OnRefreshListener() {
             public void onRefresh() {
-                if (isLoggedIn) {
+                if (isLoggedIn && coursesRecovered) {
+                    lightUpdate(courses);
+                }
+                else if (isLoggedIn) {
                     update();
                 }
                 else {
@@ -99,17 +106,26 @@ public class MainActivity
         {
             //TODO currently screen orientation change is disabled because maintaining
             //the listview "refreshing" state between changes is nontrivial.
-            //hasUpdated makes sure app doesn't constantly update after each orientation change.
+            //hasUpdated makes sure app doesn't constantly update after each orientation change,
+            //keeping it in the logic even though orientation change isn't used at this point
             hasUpdated = savedInstanceState.getBoolean(UPDATED);
         }
+
+
+        /* ---------- Handle startup logic -----------*/
         if (recoverUsernamePassword())
         {
             // TODO populate "logged in as" textview
             isLoggedIn = true;
-            if (recoverCourses())
+            coursesRecovered = recoverCourses();
+            if (coursesRecovered)
             {
                 populateListView();
                 AlarmSetter.setNextAlarm(this);
+                if (!hasUpdated) {
+                    lightUpdate(courses);
+                    hasUpdated = true;
+                }
             }
             if (!hasUpdated)
             {
@@ -280,17 +296,28 @@ public class MainActivity
      * Starts a new update process
      */
     public void update() {
-        cancelUpdate(); //cancels current update, if there is one in progress
+        cancelCurrentUpdate();
         listView.setRefreshing();
         updateInstance = new ScholarScraper();
         updateInstance.execute(username, password, this);
     }
 
     /**
+     * Starts a new light update process
+     */
+    public void lightUpdate(List<Course> courses) {
+        cancelCurrentUpdate();
+        listView.setRefreshing();
+        updateInstance = new LightScholarScraper();
+        updateInstance.execute(username, password, courses, this);
+    }
+
+    /**
      * Cancel the current update if one is currently running
      */
-    public void cancelUpdate() {
-        if (updateInstance != null) {
+    public void cancelCurrentUpdate() {
+        if (updateInstance != null)
+        {
             updateInstance.cancel(true);
             updateInstance = null;
             listView.onRefreshComplete();

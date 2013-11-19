@@ -1,5 +1,6 @@
 package com.scholarscraper;
 
+import com.scholarscraper.alarm.AlarmSetter;
 import java.io.IOException;
 import com.scholarscraper.model.Assignment;
 import com.scholarscraper.model.Course;
@@ -39,8 +40,8 @@ public class ScholarScraper
     public static final int IO_ERROR    = 13;
     public static final int CANCELLED   = 14;
 
-    Context                 context;
-    List<Course>            courses;
+    protected Context                 context;
+    protected List<Course>            courses;
 
     Exception exception = null;
 
@@ -57,6 +58,7 @@ public class ScholarScraper
     //TODO there isn't a timeout currently, if the user's internet is slow or
     //something causes the update to hang then the task may not finish updating.
     //add a timeout somewhere between 30-60 seconds
+    //TODO error handling is weird at the moment, use a system that makes more sense
     @Override
     protected Integer doInBackground(Object... params)
     {
@@ -128,7 +130,7 @@ public class ScholarScraper
     }
 
 
-    private List<Course> retrieveCourses(String mainPageHtml, String semester)
+    protected List<Course> retrieveCourses(String mainPageHtml, String semester)
         throws WrongLoginException,
         IOException, ParseException
     {
@@ -227,7 +229,7 @@ public class ScholarScraper
     }
 
 
-    public void retrieveTasks(List<Course> courses)
+    protected void retrieveTasks(List<Course> courses)
         throws IOException,
         ParseException
     {
@@ -271,6 +273,15 @@ public class ScholarScraper
 
         System.out.println("connecting to quiz portlet url at " + portletUrl);
 
+        // we save the portlet url so we can connect directly to it with a
+        // more lightweight update process instead of going through all
+        // of the steps we've had to do up to this point
+        course.setQuizPortletUrl(portletUrl);
+
+        getQuizzesFromPortlet(course, portletUrl);
+    }
+
+    protected void getQuizzesFromPortlet(Course course, String portletUrl) throws ParseException, IOException {
         String portletPage = parseScholarPage(portletUrl);
         Document portletDoc = Jsoup.parse(portletPage);
 
@@ -300,7 +311,7 @@ public class ScholarScraper
                 // In this case, course.addTask() returns the replaced quiz's
                 // unique ID, which we can use to cancel the old quiz's
                 // out of date alarm.
-                /* TODO add alarm canceling */
+                AlarmSetter.cancelAlarm(context, result);
             }
         }
     }
@@ -316,6 +327,15 @@ public class ScholarScraper
             assignmentDoc.select("div[class*=title] > a").first();
         String portletUrl = assignmentHtml.attr("href");
 
+        // we save the portlet url so we can connect directly to it with a
+        // more lightweight update process instead of going through all
+        // of the steps we've had to do up to this point
+        course.setAssignmentPortletUrl(portletUrl);
+
+        getAssignmentsFromPortlet(course, portletUrl);
+    }
+
+    protected void getAssignmentsFromPortlet(Course course, String portletUrl) throws IOException, ParseException {
         String portletPage = parseScholarPage(portletUrl);
         Document portletDoc = Jsoup.parse(portletPage);
 
@@ -339,7 +359,7 @@ public class ScholarScraper
                 // In this case, course.addTask() returns the replaced assignment's
                 // unique ID, which we can use to cancel the old assignment's
                 // out of date alarm.
-                /* TODO add alarm canceling */
+                AlarmSetter.cancelAlarm(context, result);
             }
         }
     }
@@ -347,7 +367,7 @@ public class ScholarScraper
 
     /**
      * Can parse any page inside the scholar website on the precondition that
-     * loginToScholar() has already been called.
+     * loginToScholar() has already been called (for CAS/authentication purposes).
      */
     private String parseScholarPage(String urlString)
         throws IOException
@@ -360,7 +380,7 @@ public class ScholarScraper
     }
 
 
-    private String loginToScholar(String username, String password)
+    protected String loginToScholar(String username, String password)
         throws IOException,
         WrongLoginException
     {
@@ -455,12 +475,11 @@ public class ScholarScraper
      * Gets the current semester in the format "Spring/Fall 2xxx", i.e.
      * "Spring 2013"
      */
-    private String getSemester()
+    protected String getSemester()
     {
         Calendar c = Calendar.getInstance();
         int month = c.get(Calendar.MONTH);
-        month = (month + 6) % 12; // advances months by 6 so 0 is effectively
-// July
+        month = (month + 6) % 12; // advances months by 6 so 0 is effectively July
         String semester;
         if (month < 6)
         { // from July to December
@@ -471,7 +490,6 @@ public class ScholarScraper
         else
         { // from January to June
             semester = "Spring " + c.get(Calendar.YEAR);
-            System.out.println(semester);
             return semester;
         }
     }
@@ -490,7 +508,7 @@ public class ScholarScraper
             String value = entry.getValue();
             if (value == null) {
                 value = ""; //TODO sometimes we get a null key value in processing, figure out
-                            //why this happens
+                            //why this happens (it happens pretty rarely)
                 System.out.println("null key value found when building post data" +
                 		           " for key " + entry.getKey());
             }

@@ -30,12 +30,24 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.util.List;
 
+/**
+// -------------------------------------------------------------------------
+/**
+ *  This class handles alarm management for the app. It operates under a
+ *  one-alarm-at-a-time principle, so it will only set alarms for a user's
+ *  nearest upcoming assignment (however, if multiple assignments share the
+ *  same due date then it will still set alarms for all of them).
+ *
+ *
+ *  @author Alex
+ *  @version Nov 19, 2013
+ */
 public class AlarmSetter
 {
-    private static int ALARM_OFFSET = 43200000; //12 hours in milliseconds
-                                                //TODO make this a user setting
+    private static int ALARM_OFFSET = 12 * 3600 * 1000; //12 hours in milliseconds
+                                                        //TODO make this a user setting
 
-    //used for passing extra intent data
+    //identifier strings for passing extra intent data
     public static final String DUE_DATE_EXTRA = "dueDate";
     public static final String ASSIGNMENT_NAME_EXTRA = "assignmentName";
     public static final String COURSE_NAME_EXTRA = "courseName";
@@ -69,8 +81,17 @@ public class AlarmSetter
         }
     }
 
-    public static void cancelAlarm(long alarmId) {
-        //TODO cancel it ok!
+    /**
+     * Cancels any alarms that match the given alarmId. Note that this will
+     * not prevent future alarms from being set, and will only cancel the
+     * current alarm in the queue as long as it matches the given alarmId.
+     */
+    public static void cancelAlarm(Context context, long alarmId) {
+        Intent intent = buildCancellingIntent(alarmId);
+        PendingIntent pIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        //TODO do testing on this to verify intent filtering works
+        AlarmManager alarmManager = (AlarmManager)(context.getSystemService(Context.ALARM_SERVICE));
+        alarmManager.cancel(pIntent);
     }
 
     /**
@@ -119,10 +140,10 @@ public class AlarmSetter
     }
 
     private static Intent buildIntent(Task task) {
-        String uniqueId = Long.toString(task.getUniqueId());
-        Uri uri = Uri.parse("android.resource://com.scholarscraper/alarmId/?" + uniqueId);
+        Uri uri = Uri.parse("android.resource://com.scholarscraper/alarmId/?" + task.getUniqueId());
 
         Intent intent = new Intent("com.scholarscraper.ALARM_ALERT", uri);
+
 
         SimpleDateFormat formatter = new SimpleDateFormat("EEEE 'at' h:mm a");
         String date = formatter.format(task.getDueDate().getTime());
@@ -131,6 +152,16 @@ public class AlarmSetter
         intent.putExtra(Task.class.getName() + "." + COURSE_NAME_EXTRA, task.getCourseName());
         intent.putExtra(Task.class.getName() + "." + ASSIGNMENT_NAME_EXTRA, task.getName());
         return intent;
+    }
+
+    /**
+     * When passed through the alarm manager, these intents will cancel out any
+     * existing alarms that match the given uniqueId.
+     */
+    private static Intent buildCancellingIntent(long uniqueId) {
+        Uri uri = Uri.parse("android.resource://com.scholarscraper/alarmId/?" + uniqueId);
+
+        return new Intent("com.scholarscraper.ALARM_ALERT", uri);
     }
 
 

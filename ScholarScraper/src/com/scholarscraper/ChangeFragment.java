@@ -50,7 +50,7 @@ public class ChangeFragment
                    public void onClick(DialogInterface dialog, int id) {
                        MainActivity mainActivity = (MainActivity) context;
                        mainActivity.destroyData();
-                       mainActivity.cancelUpdate(); //cancel an update if it is in progress
+                       mainActivity.cancelCurrentUpdate(); //cancel an update if it is in progress
                        mainActivity.resetListView();
                        dismiss();
                        launchLoginDialog(UpdateFragment.DEFAULT_PROMPT);

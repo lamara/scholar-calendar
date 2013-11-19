@@ -7,7 +7,7 @@ import java.util.List;
 // -------------------------------------------------------------------------
 /**
  * Holds information about various classes, including their name, Scholar main
- * URL, and Scholar Assignment/Quiz URLs Updating assignment and quiz URLS as
+ * URL, and Scholar Assignment/Quiz URLs. Updating assignment and quiz URLS as
  * well as updating the assignment list is done by outside mutator methods in
  * the ScholarScraper class
  *
@@ -21,9 +21,10 @@ public class Course
     implements Serializable
 {
     private final String    name;
+
     private final String    mainUrl;
-    private String          assignmentUrl;
-    private String          quizUrl;
+    private String          assignmentPortletUrl;
+    private String          quizPortletUrl;
 
     private List<Task>      assignments;
 
@@ -41,8 +42,8 @@ public class Course
     {
         this.name = name;
         this.mainUrl = mainURL;
-        this.setAssignmentUrl(null);
-        this.setQuizUrl(null);
+        this.setAssignmentPortletUrl(null);
+        this.setQuizPortletUrl(null);
 
         assignments = new ArrayList<Task>();
     }
@@ -60,8 +61,8 @@ public class Course
     {
         this.name = name;
         this.mainUrl = mainUrl;
-        this.setAssignmentUrl(aUrl);
-        this.setQuizUrl(qUrl);
+        this.setAssignmentPortletUrl(aUrl);
+        this.setQuizPortletUrl(qUrl);
     }
 
 
@@ -88,9 +89,9 @@ public class Course
     /**
      * @return the assignmentURL
      */
-    public String getAssignmentUrl()
+    public String getAssignmentPortletUrl()
     {
-        return assignmentUrl;
+        return assignmentPortletUrl;
     }
 
 
@@ -99,9 +100,9 @@ public class Course
      * @param assignmentUrl
      *            the assignmentUrl to set
      */
-    public void setAssignmentUrl(String assignmentUrl)
+    public void setAssignmentPortletUrl(String assignmentUrl)
     {
-        this.assignmentUrl = assignmentUrl;
+        this.assignmentPortletUrl = assignmentUrl;
     }
 
 
@@ -109,9 +110,9 @@ public class Course
     /**
      * @return the quizURL
      */
-    public String getQuizUrl()
+    public String getQuizPortletUrl()
     {
-        return quizUrl;
+        return quizPortletUrl;
     }
 
 
@@ -120,9 +121,9 @@ public class Course
      * @param quizURL
      *            the quizURL to set
      */
-    public void setQuizUrl(String quizUrl)
+    public void setQuizPortletUrl(String quizUrl)
     {
-        this.quizUrl = quizUrl;
+        this.quizPortletUrl = quizPortletUrl;
     }
 
 

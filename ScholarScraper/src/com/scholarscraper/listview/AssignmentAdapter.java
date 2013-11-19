@@ -28,7 +28,7 @@ public class AssignmentAdapter
     /* length that assignment strings should be truncated to */
     final static private int ASSIGNMENT_TEXT_LENGTH = 29;
 
-    final static String      GRAY                   = "#909090";
+    final static String GRAY = "#909090";
 
 
     public AssignmentAdapter(Context context, Listable[] values)
