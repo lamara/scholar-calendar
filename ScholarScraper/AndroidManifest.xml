@@ -40,13 +40,16 @@
             </intent-filter>
         </service>
 
-        <receiver android:name="com.scholarscraper.alarm.AlarmReceiver"
-                android:exported="false">
+        <receiver android:name="com.scholarscraper.AlarmSetter" >
             <intent-filter>
-                <action android:name="com.scholarscraper.ALARM_ALERT" />
-                <data android:scheme="android.resource" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        <receiver android:name="com.scholarscraper.AlarmReceiver" >
+        </receiver>
+
+        <service android:name="com.scholarscraper.AlarmService" >
+        </service>
 
         <receiver
             android:name="com.scholarscraper.receivers.UpdateAtBootReceiver"

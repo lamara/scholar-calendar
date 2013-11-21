@@ -1,5 +1,6 @@
-package com.scholarscraper;
+package com.scholarscraper.update;
 
+import com.scholarscraper.MainActivity;
 import com.scholarscraper.alarm.AlarmSetter;
 import java.io.IOException;
 import com.scholarscraper.model.Assignment;

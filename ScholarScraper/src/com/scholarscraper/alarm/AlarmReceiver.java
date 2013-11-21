@@ -1,11 +1,11 @@
 package com.scholarscraper.alarm;
 
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.app.NotificationCompat;
 import com.scholarscraper.model.*;
 import android.net.Uri;
 import android.media.RingtoneManager;
 import com.scholarscraper.R;
-import android.support.v4.app.NotificationCompat;
 import android.app.Notification;
 import android.app.PendingIntent;
 import com.scholarscraper.MainActivity;

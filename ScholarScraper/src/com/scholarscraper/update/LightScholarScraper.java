@@ -1,4 +1,4 @@
-package com.scholarscraper;
+package com.scholarscraper.update;
 
 import com.scholarscraper.model.Course;
 import java.util.List;

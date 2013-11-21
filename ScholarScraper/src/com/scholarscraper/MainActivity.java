@@ -1,5 +1,9 @@
 package com.scholarscraper;
 
+import com.scholarscraper.update.ScholarScraper;
+import com.scholarscraper.update.LightScholarScraper;
+import java.util.AbstractMap.SimpleEntry;
+import com.scholarscraper.update.DataManager;
 import com.scholarscraper.alarm.AlarmSetter;
 import java.util.Calendar;
 import android.os.SystemClock;
@@ -412,41 +416,13 @@ public class MainActivity
      */
     private boolean recoverCourses()
     {
-        File file = new File(getFilesDir(), COURSE_FILE_NAME);
-        try
-        {
-            InputStream inputStream = new FileInputStream(file);
-            InputStream buffer = new BufferedInputStream(inputStream);
-            ObjectInput input = new ObjectInputStream(buffer);
-            try
-            {
-                List<Course> recoveredCourses =
-                    (List<Course>)input.readObject();
-                System.out.println("courses retrieved");
-
-                for (Course course : recoveredCourses)
-                {
-                    System.out.println(course);
-                }
-
-                this.courses = recoveredCourses;
-
-                return true;
-
-            }
-            finally
-            {
-                input.close();
-            }
+        List<Course> recoveredCourses = DataManager.recoverCourses(this);
+        if (courses != null) {
+            this.courses = recoveredCourses;
+            return true;
         }
-        catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();
-            return false;
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
+        else {
+            System.out.println("courses not retrieved");
             return false;
         }
     }
@@ -458,36 +434,8 @@ public class MainActivity
      */
     public boolean saveUsernamePassword(String username, String password)
     {
-        if (username == null || password == null)
-        {
-            System.out.println("username/password were not saved (null)");
-            return false;
-        }
         setUsernamePassword(username, password);
-        File file = new File(this.getFilesDir(), USER_FILE_NAME);
-        try
-        {
-            file.createNewFile();
-            FileOutputStream fout = new FileOutputStream(file);
-            ObjectOutputStream stream = new ObjectOutputStream(fout);
-            try
-            {
-
-                stream.writeObject(username);
-                stream.writeObject(password);
-                System.out.println("username/password were saved");
-                return true;
-            }
-            finally
-            {
-                stream.close();
-            }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            return false;
-        }
+        return DataManager.saveUsernamePassword(username, password, this);
     }
 
 
@@ -496,43 +444,16 @@ public class MainActivity
      */
     private boolean recoverUsernamePassword()
     {
-        File file = new File(this.getFilesDir(), USER_FILE_NAME);
-        try
-        {
-            InputStream inputStream = new FileInputStream(file);
-            InputStream buffer = new BufferedInputStream(inputStream);
-            ObjectInputStream input = new ObjectInputStream(buffer);
-            try
-            {
-                username = (String)input.readObject();
-                password = (String)input.readObject();
-                if (username != null && password != null)
-                {
-                    System.out.println("Username/password retrieved");
-                    return true;
-                }
-                System.out.println("Username/password not retrieved");
-                return false;
-            }
-            finally
-            {
-                input.close();
-            }
+        SimpleEntry<String, String> usernamePassword = DataManager.recoverUsernamePassword(this);
+        if (usernamePassword != null) {
+            setUsernamePassword(usernamePassword.getKey(), usernamePassword.getValue());
+            return true;
         }
-        catch (ClassNotFoundException e)
-        {
-            System.out.println("Username/password not retrieved");
-            e.printStackTrace();
-            return false;
-        }
-        catch (IOException e)
-        {
-            System.out.println("Username/password not retrieved");
-            e.printStackTrace();
+        else {
+            setUsernamePassword(null, null);
             return false;
         }
     }
-
 
 
     //TODO there are some concurrency issues right now, lets push read/write methods
@@ -544,10 +465,7 @@ public class MainActivity
     {
         isLoggedIn = false;
         setUsernamePassword(null, null);
-        File courseFile = new File(this.getFilesDir(), MainActivity.COURSE_FILE_NAME);
-        File userFile = new File(this.getFilesDir(), MainActivity.USER_FILE_NAME);
-        courseFile.delete();
-        userFile.delete();
+        DataManager.destroyData(this);
     }
 
 }

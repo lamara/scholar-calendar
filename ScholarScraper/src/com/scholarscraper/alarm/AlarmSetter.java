@@ -1,5 +1,6 @@
 package com.scholarscraper.alarm;
 
+import com.scholarscraper.update.DataManager;
 import java.util.Date;
 import com.scholarscraper.model.Assignment;
 import android.os.Parcelable;
@@ -55,30 +56,22 @@ public class AlarmSetter
     //TODO add an overloaded method that takes a courselist so we don't have to
     //do IO.
     public static void setNextAlarm(Context context) {
-        try
-        {
-            List<Course> courses = recoverCourses(context);
-            List<Task> sortedTasks = flattenCourseList(courses);
-
-            if (sortedTasks.size() == 0) {
-                System.out.println("No alarms to set");
-                return;
-            }
-            Task nextTask = sortedTasks.get(0);
-            if (nextTask.getDueDate() == null) {
-                System.out.println(nextTask.getName() + " has an indefinite due date, no alarms set");
-                return;
-            }
-            enableAlarm(sortedTasks, context);
+        List<Course> courses = DataManager.recoverCourses(context);
+        if (courses == null) {
+            System.out.println("no alarms set, failed to retrieve courses");
+            return;
         }
-        catch (ClassNotFoundException e)
-        {
-            System.out.println("failed to set alarm");
+        List<Task> sortedTasks = flattenCourseList(courses);
+        if (sortedTasks.size() == 0) {
+            System.out.println("No alarms to set");
+            return;
         }
-        catch (IOException e)
-        {
-            System.out.println("failed to set alarm");
+        Task nextTask = sortedTasks.get(0);
+        if (nextTask.getDueDate() == null) {
+            System.out.println(nextTask.getName() + " has an indefinite due date, no alarms set");
+            return;
         }
+        enableAlarm(sortedTasks, context);
     }
 
     /**
@@ -190,47 +183,5 @@ public class AlarmSetter
         }
         Collections.sort(flattenedList, new TaskListComparator());
         return flattenedList;
-    }
-
-
-
-
-    /**
-     * tries to retrieve the courselist from internal storage, returns true if
-     * successful, false if not
-     * @throws ClassNotFoundException
-     * @throws IOException
-     */
-    private static List<Course> recoverCourses(Context context) throws ClassNotFoundException, IOException
-    {
-        File file = new File(context.getFilesDir(), MainActivity.COURSE_FILE_NAME);
-        try
-        {
-            InputStream inputStream = new FileInputStream(file);
-            InputStream buffer = new BufferedInputStream(inputStream);
-            ObjectInput input = new ObjectInputStream(buffer);
-            try
-            {
-                List<Course> recoveredCourses =
-                    (List<Course>)input.readObject();
-                System.out.println("courses retrieved");
-                return recoveredCourses;
-
-            }
-            finally
-            {
-                input.close();
-            }
-        }
-        catch (ClassNotFoundException e)
-        {
-            e.printStackTrace();
-            throw e;
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            throw e;
-        }
     }
 }

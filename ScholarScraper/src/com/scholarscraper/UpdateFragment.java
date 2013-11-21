@@ -1,5 +1,7 @@
 package com.scholarscraper;
 
+import java.util.AbstractMap.SimpleEntry;
+import com.scholarscraper.update.DataManager;
 import com.scholarscraper.model.Course;
 import android.widget.Toast;
 import android.content.Context;
@@ -106,158 +108,20 @@ public class UpdateFragment
         return builder.create();
     }
 
-    /*
-    @Override
-    public View onCreateView(
-        LayoutInflater inflater,
-        ViewGroup container,
-        Bundle savedInstanceState)
-    {
-        final View myFragmentView =
-            inflater.inflate(R.layout.fragment, container, false);
-
-        Bundle arguments = getArguments();
-
-        usernameEdit = (EditText)myFragmentView.findViewById(R.id.username);
-        passwordEdit = (EditText)myFragmentView.findViewById(R.id.password);
-        prompt = (TextView)myFragmentView.findViewById(R.id.prompt);
-
-        // populate prompt textview
-        if (arguments != null)
-        {
-            String promptArg = arguments.getString("prompt");
-            prompt.setText(promptArg != null ? promptArg : DEFAULT_PROMPT);
-        }
-
-        // populate username/password fields, if they exist
-        if (recoverUsernamePassword())
-        {
-            usernameEdit.setText(username);
-            passwordEdit.setText(password);
-        }
-
-        return myFragmentView;
-    }
-    */
-
-
-    /**
-     * Saves the user's username and password to internal storage, currently
-     * stores in plain text, this needs to change before distribution
-     */
-    private boolean saveUsernamePassword()
-    {
-        if (username == null || password == null)
-        {
-            System.out.println("username/password were not saved (null)");
-            return false;
-        }
-        File file = new File(getActivity().getFilesDir(), USER_FILE_NAME);
-        try
-        {
-            file.createNewFile();
-            FileOutputStream fout = new FileOutputStream(file);
-            ObjectOutputStream stream = new ObjectOutputStream(fout);
-            try
-            {
-
-                stream.writeObject(username);
-                stream.writeObject(password);
-                System.out.println("username/password were saved");
-                return true;
-            }
-            finally
-            {
-                stream.close();
-            }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-
     /**
      * Retrieves the user's username and password from internal storage
      */
     private boolean recoverUsernamePassword()
     {
-        File file = new File(getActivity().getFilesDir(), USER_FILE_NAME);
-        try
-        {
-            InputStream inputStream = new FileInputStream(file);
-            InputStream buffer = new BufferedInputStream(inputStream);
-            ObjectInputStream input = new ObjectInputStream(buffer);
-            try
-            {
-                username = (String)input.readObject();
-                password = (String)input.readObject();
-                if (username != null && password != null)
-                {
-                    System.out.println("Username/password retrieved");
-                    return true;
-                }
-                System.out.println("Username/password not retrieved");
-                return false;
-            }
-            finally
-            {
-                input.close();
-            }
+        SimpleEntry<String, String> usernamePassword = DataManager.recoverUsernamePassword(context);
+        if (usernamePassword != null) {
+            this.username = usernamePassword.getKey();
+            this.password = usernamePassword.getValue();
+            return true;
         }
-        catch (ClassNotFoundException e)
-        {
-            System.out.println("Username/password not retrieved");
-            e.printStackTrace();
-            return false;
-        }
-        catch (IOException e)
-        {
-            System.out.println("Username/password not retrieved");
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-
-    /**
-     * returns true if courses are successfully saved to internal storage, false
-     * if not
-     *
-     * @throws IOException
-     */
-    private boolean saveCourses()
-    {
-        File file = new File(getActivity().getFilesDir(), COURSE_FILE_NAME);
-        try
-        {
-            file.createNewFile();
-            FileOutputStream fout = new FileOutputStream(file);
-            ObjectOutputStream objectStream = new ObjectOutputStream(fout);
-            try
-            {
-                if (courses != null)
-                {
-                    objectStream.writeObject(courses);
-                    System.out.println("courses were saved");
-                    return true;
-                }
-                else
-                {
-                    System.out.println("courses were not saved");
-                    return false;
-                }
-            }
-            finally
-            {
-                objectStream.close();
-            }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
+        else {
+            this.username = null;
+            this.password = null;
             return false;
         }
     }
