@@ -58,18 +58,22 @@ public final class R {
         public static final int tab_unselected_scholaractionbar=0x7f020025;
     }
     public static final class id {
-        public static final int action_change_user=0x7f0a0017;
-        public static final int action_settings=0x7f0a0016;
+        public static final int action_change_user=0x7f0a001b;
+        public static final int action_settings=0x7f0a001a;
         public static final int assignmentName=0x7f0a0008;
         public static final int back=0x7f0a000d;
         public static final int change_negative=0x7f0a0003;
         public static final int change_positive=0x7f0a0004;
+        public static final int checkBox1=0x7f0a0016;
+        public static final int checkboxSubtext=0x7f0a0019;
+        public static final int checkboxText=0x7f0a0018;
         public static final int courseName=0x7f0a0009;
         public static final int dueDate=0x7f0a000a;
         public static final int elementText=0x7f0a000b;
         public static final int layout=0x7f0a000c;
         public static final int listView=0x7f0a0000;
-        public static final int numberPicker1=0x7f0a0015;
+        public static final int numberPicker=0x7f0a0015;
+        public static final int offsetText=0x7f0a0017;
         public static final int password=0x7f0a0007;
         public static final int prompt=0x7f0a0005;
         public static final int ptr_id_header=0x7f0a000e;
@@ -92,7 +96,7 @@ public final class R {
         public static final int pop_up=0x7f030005;
         public static final int ptr_header=0x7f030006;
         public static final int separator_row=0x7f030007;
-        public static final int settings=0x7f030008;
+        public static final int settings_fragment=0x7f030008;
     }
     public static final class menu {
         public static final int activity_main=0x7f090000;

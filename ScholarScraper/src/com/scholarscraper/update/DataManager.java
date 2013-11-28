@@ -121,7 +121,6 @@ public class DataManager
                 {
                     System.out.println(course);
                 }
-
                 return recoveredCourses;
             }
             finally

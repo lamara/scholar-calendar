@@ -28,7 +28,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.scholarscraper.SettingsActivity" />
+        <activity android:name="com.scholarscraper.SettingsFragment" />
         <activity android:name="com.scholarscraper.AssignmentPopUp" >
         </activity>
 
@@ -40,16 +40,13 @@
             </intent-filter>
         </service>
 
-        <receiver android:name="com.scholarscraper.AlarmSetter" >
+        <receiver android:name="com.scholarscraper.alarm.AlarmReceiver" 
+                  android:exported="false">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="com.scholarscraper.ALARM_ALERT" />
++               <data android:scheme="android.resource" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.scholarscraper.AlarmReceiver" >
-        </receiver>
-
-        <service android:name="com.scholarscraper.AlarmService" >
-        </service>
 
         <receiver
             android:name="com.scholarscraper.receivers.UpdateAtBootReceiver"

@@ -20,6 +20,7 @@ public class AlarmReceiver
     @Override
     public void onReceive(Context context, Intent intent)
     {
+        System.out.println("alarm intent recieved");
         String dueDate = intent.getStringExtra(Task.class.getName() + "." + AlarmSetter.DUE_DATE_EXTRA);
         String assignmentName = intent.getStringExtra(Task.class.getName() + "." + AlarmSetter.ASSIGNMENT_NAME_EXTRA);
         String courseName = intent.getStringExtra(Task.class.getName() + "." + AlarmSetter.COURSE_NAME_EXTRA);

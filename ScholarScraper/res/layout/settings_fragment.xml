@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <NumberPicker
+        android:id="@+id/numberPicker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true" />
+
+    <CheckBox
+        android:id="@+id/checkBox1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/offsetText"
+        android:layout_marginTop="38dp"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/offsetText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/numberPicker"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/numberPicker"
+        android:gravity="center_vertical|center_horizontal"
+        android:text="Notify me how many hours before assignments are due?"
+        android:textSize="23sp" />
+
+    <TextView
+        android:id="@+id/checkboxText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/checkBox1"
+        android:layout_toRightOf="@+id/checkBox1"
+        android:text="Do not notify me at night"
+        android:textSize="23sp" />
+
+    <TextView
+        android:id="@+id/checkboxSubtext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/checkboxText"
+        android:layout_toRightOf="@+id/checkBox1"
+        android:text="(between 10:00 PM and 10:00 AM)" />
+
+</RelativeLayout>

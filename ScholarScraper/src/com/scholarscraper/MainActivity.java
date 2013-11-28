@@ -55,6 +55,7 @@ import java.util.List;
  * @author Alex Lamar
  * @version May 5, 2013
  */
+//TODO add a "first app launch" dialog w/ app info, privacy statement, etc.
 public class MainActivity
     extends Activity
 {
@@ -125,7 +126,7 @@ public class MainActivity
             if (coursesRecovered)
             {
                 populateListView();
-                AlarmSetter.setNextAlarm(this);
+                AlarmSetter.setNextAlarm(this, courses);
                 if (!hasUpdated) {
                     lightUpdate(courses);
                     hasUpdated = true;
@@ -231,8 +232,12 @@ public class MainActivity
      */
     private void launchSettingsActivity()
     {
-        Intent i = new Intent(this, SettingsActivity.class);
-        startActivity(i);
+        FragmentTransaction transaction =
+            getFragmentManager().beginTransaction();
+        transaction.addToBackStack(null);
+
+        DialogFragment fragment = new SettingsFragment();
+        fragment.show(transaction, "settings");
     }
 
 
@@ -260,9 +265,9 @@ public class MainActivity
         }
         isLoggedIn = true;
         this.courses = courses;
-        Toast.makeText(this, "Updated", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Updated", Toast.LENGTH_SHORT).show();
         populateListView();
-        AlarmSetter.setNextAlarm(this);
+        AlarmSetter.setNextAlarm(this, courses);
     }
 
 
@@ -287,13 +292,17 @@ public class MainActivity
             Toast.makeText(
                 this,
                 "Update failed, try to refresh again",
-                Toast.LENGTH_LONG).show();
+                Toast.LENGTH_SHORT).show();
         }
     }
 
     public void setUsernamePassword(String username, String password) {
         this.username = username;
         this.password = password;
+    }
+
+    public List<Course> getCourseList() {
+        return courses;
     }
 
     /**
@@ -417,7 +426,7 @@ public class MainActivity
     private boolean recoverCourses()
     {
         List<Course> recoveredCourses = DataManager.recoverCourses(this);
-        if (courses != null) {
+        if (recoveredCourses != null) {
             this.courses = recoveredCourses;
             return true;
         }

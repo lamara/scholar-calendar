@@ -1,34 +1,21 @@
 package com.scholarscraper.alarm;
 
+import java.util.Calendar;
+import android.content.SharedPreferences;
+import com.scholarscraper.SettingsFragment;
 import com.scholarscraper.update.DataManager;
 import java.util.Date;
-import com.scholarscraper.model.Assignment;
-import android.os.Parcelable;
 import java.text.SimpleDateFormat;
 import android.net.Uri;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
-import java.util.Calendar;
-import com.scholarscraper.listview.Listable;
 import com.scholarscraper.listview.TaskListComparator;
 import com.scholarscraper.model.Task;
-import com.scholarscraper.separators.DistantSeparator;
-import com.scholarscraper.separators.NextWeekSeparator;
-import com.scholarscraper.separators.TodaySeparator;
-import com.scholarscraper.separators.WeekSeparator;
 import java.util.ArrayList;
 import java.util.Collections;
-import com.scholarscraper.MainActivity;
 import android.content.Context;
 import com.scholarscraper.model.Course;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.util.List;
 
 /**
@@ -45,23 +32,39 @@ import java.util.List;
  */
 public class AlarmSetter
 {
-    private static int ALARM_OFFSET = 12 * 3600 * 1000; //12 hours in milliseconds
-                                                        //TODO make this a user setting
-
     //identifier strings for passing extra intent data
     public static final String DUE_DATE_EXTRA = "dueDate";
     public static final String ASSIGNMENT_NAME_EXTRA = "assignmentName";
     public static final String COURSE_NAME_EXTRA = "courseName";
 
-    //TODO add an overloaded method that takes a courselist so we don't have to
-    //do IO.
     public static void setNextAlarm(Context context) {
         List<Course> courses = DataManager.recoverCourses(context);
         if (courses == null) {
             System.out.println("no alarms set, failed to retrieve courses");
             return;
         }
-        List<Task> sortedTasks = flattenCourseList(courses);
+        List<Task> sortedTasks = flattenCourseList(courses, context);
+        if (sortedTasks.size() == 0) {
+            System.out.println("No alarms to set");
+            return;
+        }
+        Task nextTask = sortedTasks.get(0);
+        if (nextTask.getDueDate() == null) {
+            System.out.println(nextTask.getName() + " has an indefinite due date, no alarms set");
+            return;
+        }
+        enableAlarm(sortedTasks, context);
+    }
+
+    /**
+     * Use this method if the course list is already readily known, avoids IO
+     */
+    public static void setNextAlarm(Context context, List<Course> courses) {
+        if (courses == null) {
+            System.out.println("no alarms set, courselist is null");
+            return;
+        }
+        List<Task> sortedTasks = flattenCourseList(courses, context);
         if (sortedTasks.size() == 0) {
             System.out.println("No alarms to set");
             return;
@@ -123,12 +126,11 @@ public class AlarmSetter
         //(regardless of the time the alarm is set for, useful if the user changes
         //what time the alarms should go off). Verify that this actually works as intended.
         AlarmManager alarmManager = (AlarmManager)(context.getSystemService(Context.ALARM_SERVICE));
-        alarmManager.set(AlarmManager.RTC_WAKEUP, task.getDueDate().getTimeInMillis() -
-            ALARM_OFFSET, pIntent);
+        long alarmTime = calculateAlarmTime(task, context);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pIntent);
 
-        SimpleDateFormat formatter = new SimpleDateFormat("h:mm a");
-        String date = formatter.format(new Date(task.getDueDate().getTimeInMillis() -
-            ALARM_OFFSET));
+        SimpleDateFormat formatter = new SimpleDateFormat("h:mm a, d");
+        String date = formatter.format(new Date(alarmTime));
         System.out.println("Alarm set for " + task + " at time " + date);
     }
 
@@ -157,12 +159,59 @@ public class AlarmSetter
         return new Intent("com.scholarscraper.ALARM_ALERT", uri);
     }
 
+    /**
+     * Calculates the time (in milliseconds) that the alarm setter should set
+     * for the given task. Takes into account whether or not the user wants to
+     * be notified at night.
+     */
+    private static long calculateAlarmTime(Task task, Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(SettingsFragment.PREFERENCES,
+            Context.MODE_PRIVATE);
+        boolean cancelNightAlarms = sharedPreferences.getBoolean(SettingsFragment.CANCEL_NIGHT_ALARMS, true);
+        int offset = retrieveOffset(context);
+        Calendar dueDate = task.getDueDate();
+        long alarmTime = dueDate.getTimeInMillis() - offset;
+
+        if (cancelNightAlarms) {
+            //with this modulus we will get a value from 0-23, subtracting 5 from
+            //the alarmTime to account for EST offset, this will probably be off by an
+            //hour once we hit daylight savings time. //TODO fix daylight savings issue
+            long alarmHourOfDay = ((alarmTime - 5 * 1000 * 3600) % (24 * 1000 * 3600)) / (1000 * 3600) ;
+            if (alarmHourOfDay > SettingsFragment.LOW_CUTOFF) {
+                Calendar c = Calendar.getInstance();
+                c.setTimeInMillis(alarmTime);
+                c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DATE),
+                      SettingsFragment.LOW_CUTOFF, 0 , 0);
+                return c.getTimeInMillis();
+            }
+            else if (alarmHourOfDay < SettingsFragment.HIGH_CUTOFF) {
+                Calendar c = Calendar.getInstance();
+                c.setTimeInMillis(alarmTime);
+                //subtract date by 1 here, we want to set the alarm back in time, not forward
+                c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DATE) - 1,
+                      SettingsFragment.LOW_CUTOFF, 0 , 0);
+                return c.getTimeInMillis();
+            }
+        }
+        return alarmTime;
+    }
+
+    /**
+     * returns the current alarm offset in milliseconds
+     */
+    private static int retrieveOffset(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(SettingsFragment.PREFERENCES,
+            Context.MODE_PRIVATE);
+        int offset = sharedPreferences.getInt(SettingsFragment.OFFSET, SettingsFragment.DEFAULT_OFFSET);
+        return offset * 3600 * 1000; //from hours to milliseconds
+    }
 
     /**
      * Flattens the list of courses into an array of sorted tasks
      */
-    private static List<Task> flattenCourseList(List<Course> courses)
+    private static List<Task> flattenCourseList(List<Course> courses, Context context)
     {
+        int offset = retrieveOffset(context);
         List<Task> flattenedList = new ArrayList<Task>();
 
         // add all tasks that aren't older than some constant
@@ -175,7 +224,7 @@ public class AlarmSetter
                 {
                     flattenedList.add(task);
                 }
-                else if (task.getDueDate().getTimeInMillis() >= currentTime + ALARM_OFFSET)
+                else if (task.getDueDate().getTimeInMillis() >= currentTime + offset)
                 {
                     flattenedList.add(task);
                 }

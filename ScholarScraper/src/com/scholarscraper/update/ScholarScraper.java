@@ -102,12 +102,8 @@ public class ScholarScraper
     @Override
     public void onPostExecute(Integer result)
     {
-        try {
-            saveCourses();
-        }
-        catch (IOException e) {
+        if (!DataManager.saveCourses(courses, context)) {
             result = IO_ERROR;
-            e.printStackTrace();
         }
         if (context != null && context instanceof MainActivity) {
             ((MainActivity) context).onUpdateFinished(courses, result);
@@ -519,40 +515,4 @@ public class ScholarScraper
         }
         return strBuilder.toString();
     }
-
-
-    /**
-     * returns true if courses are successfully saved to internal storage, false
-     * if not
-     *
-     * @throws IOException
-     */
-    private boolean saveCourses()
-        throws IOException
-    {
-        File file = new File(context.getFilesDir(), "courses");
-
-        file.createNewFile();
-        FileOutputStream fout = new FileOutputStream(file);
-        ObjectOutputStream objectStream = new ObjectOutputStream(fout);
-        try
-        {
-            if (courses != null)
-            {
-                objectStream.writeObject(courses);
-                System.out.println("courses were saved");
-                return true;
-            }
-            else
-            {
-                System.out.println("courses were not saved");
-                return false;
-            }
-        }
-        finally
-        {
-            objectStream.close();
-        }
-    }
-
 }
