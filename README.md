@@ -6,3 +6,4 @@ Logs on to Virginia Tech's Scholar website and puts assignment and course data i
 The app is around 80-90% finished, there are some minor things that need to be added before it can go into production, and there are always going to be more features that could be added to it to make it better.
 
 Check out this screenshot. http://oi39.tinypic.com/2jb41hy.jpg
+And this one too:          http://oi44.tinypic.com/24pe69u.jpg
