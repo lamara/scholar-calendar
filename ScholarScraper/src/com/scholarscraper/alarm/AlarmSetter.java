@@ -127,11 +127,19 @@ public class AlarmSetter
         //what time the alarms should go off). Verify that this actually works as intended.
         AlarmManager alarmManager = (AlarmManager)(context.getSystemService(Context.ALARM_SERVICE));
         long alarmTime = calculateAlarmTime(task, context);
-        alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pIntent);
+        long currentTime = System.currentTimeMillis();
+        //we are not going to set retroactive alarms because it can cause an infinite
+        //loop dynamic between the AlarmSetter and the AlarmReceiver
+        if (alarmTime > currentTime) {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pIntent);
 
-        SimpleDateFormat formatter = new SimpleDateFormat("h:mm a, d");
-        String date = formatter.format(new Date(alarmTime));
-        System.out.println("Alarm set for " + task + " at time " + date);
+            SimpleDateFormat formatter = new SimpleDateFormat("h:mm a, ddd");
+            String date = formatter.format(new Date(alarmTime));
+            System.out.println("Alarm set for " + task + " at time " + date);
+        }
+        else {
+            System.out.println("Alarm not set because its trigger time has already past");
+        }
     }
 
     private static Intent buildIntent(Task task) {

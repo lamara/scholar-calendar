@@ -49,7 +49,7 @@ public class AlarmReceiver
             .setStyle(new NotificationCompat.BigTextStyle()).build();
         notificationManager.notify(0, n);
 
+        //TODO major bug here, next alarm keeps getting set in an infinite loop
         AlarmSetter.setNextAlarm(context);
     }
-
 }

@@ -1,5 +1,6 @@
 package com.scholarscraper;
 
+import android.content.DialogInterface;
 import android.view.View.OnClickListener;
 import android.widget.CheckBox;
 import java.util.List;
@@ -54,6 +55,12 @@ public class SettingsFragment
         return view;
     }
 
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        List<Course> courses = ((MainActivity) context).getCourseList();
+        AlarmSetter.setNextAlarm(context, courses);
+    }
+
 
     private void initNumberPicker(NumberPicker numberPicker) {
         numberPicker.setMaxValue(48);
@@ -63,8 +70,6 @@ public class SettingsFragment
         numberPicker.setOnValueChangedListener( new NumberPicker.OnValueChangeListener() {
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
                 sharedPreferences.edit().putInt(OFFSET, newVal).commit();
-                List<Course> courses = ((MainActivity) context).getCourseList();
-                AlarmSetter.setNextAlarm(context, courses);
             }
         });
     }
@@ -78,8 +83,6 @@ public class SettingsFragment
                 sharedPreferences.edit()
                                  .putBoolean(CANCEL_NIGHT_ALARMS, ((CheckBox) checkBox).isChecked())
                                  .commit();
-                List<Course> courses = ((MainActivity) context).getCourseList();
-                AlarmSetter.setNextAlarm(context, courses);
             }
         });
     }
