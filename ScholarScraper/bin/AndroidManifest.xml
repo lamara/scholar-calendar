@@ -9,8 +9,6 @@
         android:targetSdkVersion="17" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_CALENDAR" />
-    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
@@ -33,10 +31,10 @@
         </activity>
 
         <service
-            android:name="com.scholarscraper.UpdateService"
+            android:name="com.scholarscraper.update.UpdateService"
             android:label="Update Service" >
             <intent-filter>
-                <action android:name="com.scholarscraper.UpdateService" />
+                <action android:name="com.scholarscraper.UPDATE_SERVICE" />
             </intent-filter>
         </service>
 
@@ -49,7 +47,7 @@
         </receiver>
 
         <receiver
-            android:name="com.scholarscraper.receivers.UpdateAtBootReceiver"
+            android:name="com.scholarscraper.update.UpdateAtBootReceiver"
             android:enabled="true"
             android:exported="true"
             android:label="UpdateAtBootReceiver" >

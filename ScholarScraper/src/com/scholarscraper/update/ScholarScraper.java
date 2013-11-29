@@ -29,6 +29,13 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+/**
+ * // -------------------------------------------------------------------------
+/**
+ *  Logs in to scholar and retrieves a list of course/assignment information
+ *  for the given user. Execute should be called with the params
+ *  scholarScraper.execute(String username, String password, Context context).
+ */
 public class ScholarScraper
     extends AsyncTask<Object, Void, Integer>
 {
@@ -104,6 +111,7 @@ public class ScholarScraper
     {
         if (!DataManager.saveCourses(courses, context)) {
             result = IO_ERROR;
+            System.out.println("Failed to save courses");
         }
         if (context != null && context instanceof MainActivity) {
             ((MainActivity) context).onUpdateFinished(courses, result);

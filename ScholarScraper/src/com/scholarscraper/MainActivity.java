@@ -1,5 +1,6 @@
 package com.scholarscraper;
 
+import com.scholarscraper.update.UpdateService;
 import com.scholarscraper.update.ScholarScraper;
 import com.scholarscraper.update.LightScholarScraper;
 import java.util.AbstractMap.SimpleEntry;
@@ -75,8 +76,10 @@ public class MainActivity
 
     public static final String  USER_FILE_NAME    = "userData";
     public static final String  COURSE_FILE_NAME  = "courses";
-    private static final int    PAST_DUE_CONSTANT = 24 * 3600 * 1000; //1 day in milli
+    private static final int    PAST_DUE_CONSTANT = 24 * 3600 * 1000; //1 day in milliseconds
     public static final int     LOGGED_IN_STATE_INDEX = 0;
+
+    public static final int UPDATE_INTERVAL = 6; //in hours
 
 
     //TODO change logging app wide to stop using system.out, also remove any
@@ -115,7 +118,7 @@ public class MainActivity
             //keeping it in the logic even though orientation change isn't used at this point
             hasUpdated = savedInstanceState.getBoolean(UPDATED);
         }
-
+        initScheduledUpdate();
 
         /* ---------- Handle startup logic -----------*/
         if (recoverUsernamePassword())
@@ -335,6 +338,24 @@ public class MainActivity
             updateInstance = null;
             listView.onRefreshComplete();
         }
+    }
+
+    /**
+     * Sets up a scheduled update that will run periodically, the first alarm will run
+     * after the amount of time in the UPDATE_INTERVAL field has passed.
+     */
+    public void initScheduledUpdate() {
+        Intent service = new Intent(this, UpdateService.class);
+
+        PendingIntent pendingIntent = PendingIntent.getService(this, 0, service, 0);
+
+        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+        Calendar cal = Calendar.getInstance();
+
+        alarm.cancel(pendingIntent); //remove already existing alarms (if they exist)
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis() + UPDATE_INTERVAL,
+            AlarmManager.INTERVAL_HOUR * UPDATE_INTERVAL, pendingIntent);
     }
 
     public void resetListView() {
