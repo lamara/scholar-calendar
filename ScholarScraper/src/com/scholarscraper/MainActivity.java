@@ -1,11 +1,7 @@
 package com.scholarscraper;
 
 import com.scholarscraper.separators.GenericSeparator;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.TextView;
-import android.widget.RelativeLayout;
-import android.view.LayoutInflater;
-import android.view.View;
 import com.scholarscraper.update.UpdateService;
 import com.scholarscraper.update.ScholarScraper;
 import com.scholarscraper.update.LightScholarScraper;
@@ -13,7 +9,6 @@ import java.util.AbstractMap.SimpleEntry;
 import com.scholarscraper.update.DataManager;
 import com.scholarscraper.alarm.AlarmSetter;
 import java.util.Calendar;
-import android.os.SystemClock;
 import android.app.AlarmManager;
 import android.content.Context;
 import android.app.PendingIntent;
@@ -33,22 +28,12 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ListView;
 import android.widget.Toast;
 import com.scholarscraper.separators.DateSeparator;
 import com.scholarscraper.separators.DistantSeparator;
 import com.scholarscraper.separators.NextWeekSeparator;
 import com.scholarscraper.separators.TodaySeparator;
 import com.scholarscraper.separators.WeekSeparator;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -73,7 +58,7 @@ public class MainActivity
     private TextView              emptyListText;
     private ActionBar             actionBar;
 
-
+    //UPDATED is a savedInstance key value
     private static final String UPDATED           = "updated";
     private boolean             hasUpdated        = false;
     private boolean             isLoggedIn        = false;
@@ -84,13 +69,20 @@ public class MainActivity
 
     public static final String  USER_FILE_NAME    = "userData";
     public static final String  COURSE_FILE_NAME  = "courses";
+
     private static final int    PAST_DUE_CONSTANT = 24 * 3600 * 1000; //1 day in milliseconds
-    public static final int     LOGGED_IN_STATE_INDEX = 0;
 
     public static final int UPDATE_INTERVAL = 6; //in hours
 
-    final static private String EMPTY_LIST_TEXT = "No outstanding assignments!";
-    final static private String LOG_IN_TEXT = "Please log in!";
+    //used to show the state of the list view
+    private static final String EMPTY_LIST_TEXT = "No outstanding assignments!";
+    private static final String LOG_IN_LIST_TEXT = "Please log in!";
+    //used for action menu items
+    private static final String LOG_IN = "Log in";
+    private static final String LOG_OUT = "Log out";
+
+    private MenuItem settingsMenu;
+    private MenuItem changeUserMenu;
 
     //TODO change logging app wide to stop using system.out, also remove any
     //logging that was previously used for debugging purposes
@@ -142,7 +134,7 @@ public class MainActivity
         else
         {
             isLoggedIn = false;
-            showEmptyListView(LOG_IN_TEXT);
+            showEmptyListView(LOG_IN_LIST_TEXT);
             launchLoginDialog(UpdateFragment.DEFAULT_PROMPT);
         }
     }
@@ -153,12 +145,16 @@ public class MainActivity
     {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.activity_main, menu);
-        actionBar = getActionBar();
+        //onCreateOptionsMenu gets called after onCreate(), so we have an idea
+        //of the app state at this point.
+        changeUserMenu = menu.getItem(0); //update these indices if actionbar ever changes
+        settingsMenu = menu.getItem(1);
+
         if (isLoggedIn) {
-            //actionBar.getTabAt(LOGGED_IN_STATE_INDEX).setText("Log Out");
+            changeUserMenu.setTitle(LOG_OUT);
         }
         else {
-            //actionBar.getTabAt(LOGGED_IN_STATE_INDEX).setText("Log In");
+            changeUserMenu.setTitle(LOG_IN);
         }
         return true;
     }
@@ -171,7 +167,12 @@ public class MainActivity
         {
             case R.id.action_change_user:
             {
-                launchChangeDialog();
+                if (isLoggedIn) {
+                    launchChangeDialog();
+                }
+                else {
+                    launchLoginDialog(UpdateFragment.DEFAULT_PROMPT);
+                }
                 break;
             }
             case R.id.action_settings:
@@ -283,9 +284,7 @@ public class MainActivity
         listView.onRefreshComplete();
         if (result == ScholarScraper.WRONG_LOGIN)
         {
-            username = null;
-            password = null;
-            saveUsernamePassword(username, password);
+            logOut();
             launchLoginDialog("Invalid username or password.");
         }
         if (result == ScholarScraper.ERROR)
@@ -352,14 +351,16 @@ public class MainActivity
         Calendar cal = Calendar.getInstance();
 
         alarm.cancel(pendingIntent); //remove already existing alarms (if they exist)
-        alarm.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis() + UPDATE_INTERVAL,
-            AlarmManager.INTERVAL_HOUR * UPDATE_INTERVAL, pendingIntent);
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP,
+                           cal.getTimeInMillis() + AlarmManager.INTERVAL_HOUR * UPDATE_INTERVAL,
+                           AlarmManager.INTERVAL_HOUR * UPDATE_INTERVAL,
+                           pendingIntent);
     }
 
     public void initListView(final PullToRefreshListView listView) {
         listView.setOnRefreshListener(new OnRefreshListener() {
             public void onRefresh() {
-                if (isLoggedIn && coursesRecovered) {
+                if (isLoggedIn && courses != null) {
                     lightUpdate(courses);
                 }
                 else if (isLoggedIn) {
@@ -370,17 +371,6 @@ public class MainActivity
                 }
             }
         });
-
-        //sets up the view to be displayed whenever the listview is empty
-        /*
-        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        RelativeLayout view = (RelativeLayout) inflater.inflate(R.layout.separator_row, null);
-        emptyListText = (TextView)view.findViewById(R.id.separatorText);
-        emptyListText.setText("Please log in!");
-        listView.setEmptyView(view);
-        addContentView(view, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-        */
-
 
         resetListView(); //has the side effect of "instantiating" the listview
                          //by adding an empty adapter to it, pull-to-refresh
@@ -530,10 +520,19 @@ public class MainActivity
         }
     }
 
+    public void logIn(String username, String password) {
+        isLoggedIn = true;
+        saveUsernamePassword(username, password);
+        resetListView();
+        changeUserMenu.setTitle(LOG_OUT);
+        update();
+    }
+
     public void logOut() {
         isLoggedIn = false;
         setUsernamePassword(null, null);
-        showEmptyListView(LOG_IN_TEXT);
+        showEmptyListView(LOG_IN_LIST_TEXT);
+        changeUserMenu.setTitle(LOG_IN);
         destroyData();
     }
 

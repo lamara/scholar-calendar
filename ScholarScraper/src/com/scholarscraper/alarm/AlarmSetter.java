@@ -110,6 +110,7 @@ public class AlarmSetter
             return;
         }
         if (index + 1 < sortedTasks.size() &&
+            sortedTasks.get(index + 1).getDueDate() != null &&
             sortedTasks.get(index + 1).getDueDate().equals(currentTask.getDueDate()))
         {
             enableAlarm(sortedTasks, index + 1, context);
