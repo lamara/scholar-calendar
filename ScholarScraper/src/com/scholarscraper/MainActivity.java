@@ -1,5 +1,11 @@
 package com.scholarscraper;
 
+import com.scholarscraper.separators.GenericSeparator;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.TextView;
+import android.widget.RelativeLayout;
+import android.view.LayoutInflater;
+import android.view.View;
 import com.scholarscraper.update.UpdateService;
 import com.scholarscraper.update.ScholarScraper;
 import com.scholarscraper.update.LightScholarScraper;
@@ -62,9 +68,11 @@ public class MainActivity
 {
     private ScholarScraper updateInstance;
 
-    private List<Course>        courses;
-    private PullToRefreshListView            listView;
-    private ActionBar           actionBar;
+    private List<Course>          courses;
+    private PullToRefreshListView listView;
+    private TextView              emptyListText;
+    private ActionBar             actionBar;
+
 
     private static final String UPDATED           = "updated";
     private boolean             hasUpdated        = false;
@@ -81,6 +89,8 @@ public class MainActivity
 
     public static final int UPDATE_INTERVAL = 6; //in hours
 
+    final static private String EMPTY_LIST_TEXT = "No outstanding assignments!";
+    final static private String LOG_IN_TEXT = "Please log in!";
 
     //TODO change logging app wide to stop using system.out, also remove any
     //logging that was previously used for debugging purposes
@@ -94,22 +104,8 @@ public class MainActivity
         PreferenceManager.setDefaultValues(this, R.xml.settings, false);
         actionBar = getActionBar();
         listView = (PullToRefreshListView)findViewById(R.id.listView);
-        listView.setOnRefreshListener(new OnRefreshListener() {
-            public void onRefresh() {
-                if (isLoggedIn && coursesRecovered) {
-                    lightUpdate(courses);
-                }
-                else if (isLoggedIn) {
-                    update();
-                }
-                else {
-                    listView.onRefreshComplete();
-                }
-            }
-        });
-        resetListView(); //has the side effect of "instantiating" the listview
-                         //by adding an empty adapter to it, pull-to-refresh
-                         //won't work on a listview that has not been set at all.
+        initListView(listView);
+
         if (savedInstanceState != null)
         {
             //TODO currently screen orientation change is disabled because maintaining
@@ -125,6 +121,7 @@ public class MainActivity
         {
             // TODO populate "logged in as" textview
             isLoggedIn = true;
+            //emptyListText.setText("No assignments found!");
             coursesRecovered = recoverCourses();
             if (coursesRecovered)
             {
@@ -145,6 +142,7 @@ public class MainActivity
         else
         {
             isLoggedIn = false;
+            showEmptyListView(LOG_IN_TEXT);
             launchLoginDialog(UpdateFragment.DEFAULT_PROMPT);
         }
     }
@@ -358,16 +356,63 @@ public class MainActivity
             AlarmManager.INTERVAL_HOUR * UPDATE_INTERVAL, pendingIntent);
     }
 
+    public void initListView(final PullToRefreshListView listView) {
+        listView.setOnRefreshListener(new OnRefreshListener() {
+            public void onRefresh() {
+                if (isLoggedIn && coursesRecovered) {
+                    lightUpdate(courses);
+                }
+                else if (isLoggedIn) {
+                    update();
+                }
+                else {
+                    listView.onRefreshComplete();
+                }
+            }
+        });
+
+        //sets up the view to be displayed whenever the listview is empty
+        /*
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        RelativeLayout view = (RelativeLayout) inflater.inflate(R.layout.separator_row, null);
+        emptyListText = (TextView)view.findViewById(R.id.separatorText);
+        emptyListText.setText("Please log in!");
+        listView.setEmptyView(view);
+        addContentView(view, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+        */
+
+
+        resetListView(); //has the side effect of "instantiating" the listview
+                         //by adding an empty adapter to it, pull-to-refresh
+                         //won't work on a listview that has not been set at all;
+    }
+
+    /**
+     * Populate the listview with text signifying that it is empty
+     */
+    public void showEmptyListView(String text) {
+        GenericSeparator separator = new GenericSeparator(text);
+        Listable[] list = new Listable[1];
+        list[0] = separator;
+
+        AssignmentAdapter adapter = new AssignmentAdapter(this, list);
+        listView.setAdapter(adapter);
+    }
+
+    /**
+     * Populates the listview with an empty adapter
+     */
     public void resetListView() {
         AssignmentAdapter adapter = new AssignmentAdapter(this, new Listable[0]);
         listView.setAdapter(adapter);
     }
 
-
     private void populateListView()
     {
-        AssignmentAdapter adapter =
-            new AssignmentAdapter(this, flattenCourseList(courses));
+        AssignmentAdapter adapter = new AssignmentAdapter(this, flattenCourseList(courses));
+        if (adapter.isEmpty()) {
+            showEmptyListView(EMPTY_LIST_TEXT);
+        }
         listView.setAdapter(adapter);
     }
 
@@ -485,16 +530,18 @@ public class MainActivity
         }
     }
 
+    public void logOut() {
+        isLoggedIn = false;
+        setUsernamePassword(null, null);
+        showEmptyListView(LOG_IN_TEXT);
+        destroyData();
+    }
 
-    //TODO there are some concurrency issues right now, lets push read/write methods
-    //into a static synchronized class so the app can't read/write at the same time.
     /**
      * Destroys internal data state, effectively resetting the state of the app
      */
     public void destroyData()
     {
-        isLoggedIn = false;
-        setUsernamePassword(null, null);
         DataManager.destroyData(this);
     }
 

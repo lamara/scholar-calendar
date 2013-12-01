@@ -49,9 +49,8 @@ public class ChangeFragment
                .setPositiveButton("Log out", new DialogInterface.OnClickListener() {
                    public void onClick(DialogInterface dialog, int id) {
                        MainActivity mainActivity = (MainActivity) context;
-                       mainActivity.destroyData();
-                       mainActivity.cancelCurrentUpdate(); //cancel an update if it is in progress
-                       mainActivity.resetListView();
+                       mainActivity.logOut();
+                       mainActivity.cancelCurrentUpdate();
                        dismiss();
                        launchLoginDialog(UpdateFragment.DEFAULT_PROMPT);
                    }

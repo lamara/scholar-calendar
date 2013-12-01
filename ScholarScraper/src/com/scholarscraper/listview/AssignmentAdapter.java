@@ -1,5 +1,6 @@
 package com.scholarscraper.listview;
 
+import com.scholarscraper.separators.GenericSeparator;
 import com.scholarscraper.model.Task;
 import com.scholarscraper.R;
 import com.scholarscraper.R.id;
@@ -43,10 +44,7 @@ public class AssignmentAdapter
     @Override
     public View getView(int position, View convertView, ViewGroup parent)
     {
-        LayoutInflater inflater =
-            (LayoutInflater)context
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        ;
+        LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         Listable element = values[position];
 
@@ -111,7 +109,6 @@ public class AssignmentAdapter
 
         return assignmentView;
     }
-
 
     /**
      * If an assignment is past its due date then we want to gray its elements

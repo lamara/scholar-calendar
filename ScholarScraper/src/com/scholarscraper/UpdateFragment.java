@@ -92,6 +92,7 @@ public class UpdateFragment
                        username = usernameEdit.getText().toString();
                        password = passwordEdit.getText().toString();
                        mainActivity.saveUsernamePassword(username, password);
+                       mainActivity.resetListView();
                        mainActivity.update();
                        Toast.makeText(context, "Updating...", Toast.LENGTH_LONG).show();
                        dismiss();
