@@ -76,7 +76,6 @@ public class ScholarScraper
         try
         {
             String mainPage = loginToScholar(username, password);
-            System.out.println("Printing main page, logged in successfully: \n" + mainPage);
             courses = retrieveCourses(mainPage, getSemester());
             retrieveTasks(courses);
             if (isCancelled()) {
@@ -161,9 +160,7 @@ public class ScholarScraper
     private String[] retrieveCourseHtmls(Document mainPage, String semester)
         throws IOException
     {
-        System.out.println("executing semester html retrieval");
         Elements elements = mainPage.select("div#otherSitesCategorWrap");
-        // System.out.println(elements);
         ArrayList<String> htmlLines = new ArrayList<String>();
 
         /*
@@ -171,7 +168,6 @@ public class ScholarScraper
          * can't use Jsoup's built in HTML parser to retrieve html lines
          */
         String html = elements.html();
-        System.out.println(html);
         StringReader reader = new StringReader(html);
         BufferedReader bufferedReader = new BufferedReader(reader);
         String line;
@@ -229,7 +225,6 @@ public class ScholarScraper
                     + html,
                 0);
         }
-        System.out.println(className + " created");
         return new Course(className, rootUrl);
     }
 
@@ -240,17 +235,14 @@ public class ScholarScraper
     {
         for (Course course : courses)
         {
-            System.out.println(course);
             String courseHtml = parseScholarPage(course.getMainUrl());
             Document courseDoc = Jsoup.parse(courseHtml);
-            // System.out.println(courseDoc);
             String assignmentUrl;
             Element assignmentHtml =
                 courseDoc.select("span[class*=assignment]").first();
             if (assignmentHtml != null)
             {
                 assignmentUrl = assignmentHtml.parent().attr("href");
-                System.out.println(assignmentUrl);
                 retrieveAssignments(course, assignmentUrl);
             }
 
@@ -259,7 +251,6 @@ public class ScholarScraper
             if (quizHtml != null)
             {
                 quizUrl = quizHtml.parent().attr("href");
-                System.out.println(quizUrl);
                 retrieveQuizzes(course, quizUrl);
             }
         }
@@ -275,8 +266,6 @@ public class ScholarScraper
         Element quizHtml = quizDoc.select("div[class*=title] > a").first();
         // the portlet page holds all of the data that we need for a course's quizzes
         String portletUrl = quizHtml.attr("href");
-
-        System.out.println("connecting to quiz portlet url at " + portletUrl);
 
         // we save the portlet url so we can connect directly to it with a
         // more lightweight update process instead of going through all
@@ -405,7 +394,6 @@ public class ScholarScraper
             // page at this point.
             return loginPage;
         }
-        System.out.println("Printing lt element: \n" + lt);
 
         // fields used for post
         Map<String, String> fields = new HashMap<String, String>();
@@ -418,7 +406,6 @@ public class ScholarScraper
 
         String postData = buildPostData(fields);
 
-        System.out.println("Printin post data: \n" + postData);
         connection.setRequestMethod("POST");
         connection.setRequestProperty(
             "Content-Type",
@@ -443,7 +430,6 @@ public class ScholarScraper
         String response = readFromInputStream(connection.getInputStream());
         if (!response.contains("\"loggedIn\": true"))
         {
-            System.out.println("Not logged in, printing response: \n" + response);
             throw new WrongLoginException();
         }
         return response;
@@ -489,7 +475,6 @@ public class ScholarScraper
         if (month < 6)
         { // from July to December
             semester = "Fall " + c.get(Calendar.YEAR);
-            System.out.println(semester);
             return semester;
         }
         else

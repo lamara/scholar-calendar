@@ -262,7 +262,7 @@ public class MainActivity
             //this is a bad situation to be in because now the user state is potentially corrupted
             //so we are going to reset the state of the app. (this really shouldn't happen except
             //under bad IO circumstances beyond our control).
-            destroyData();
+            logOut();
 
         }
         isLoggedIn = true;
