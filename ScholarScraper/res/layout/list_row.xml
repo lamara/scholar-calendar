@@ -17,7 +17,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:maxLines="2"
+        android:maxLines="1"
+        android:maxWidth="230dp"
         android:text="TextView"
         android:textSize="18sp"
         android:textStyle="bold" />

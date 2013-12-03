@@ -1,5 +1,8 @@
 package com.scholarscraper.listview;
 
+import android.util.DisplayMetrics;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import com.scholarscraper.separators.GenericSeparator;
 import com.scholarscraper.model.Task;
 import com.scholarscraper.R;
@@ -41,6 +44,7 @@ public class AssignmentAdapter
     }
 
 
+    //TODO use recycled views also
     @Override
     public View getView(int position, View convertView, ViewGroup parent)
     {
