@@ -1,5 +1,8 @@
 package com.scholarscraper;
 
+import android.content.SharedPreferences;
+import android.content.DialogInterface;
+import android.app.AlertDialog;
 import com.scholarscraper.separators.GenericSeparator;
 import android.widget.TextView;
 import com.scholarscraper.update.UpdateService;
@@ -58,14 +61,19 @@ public class MainActivity
     private TextView              emptyListText;
     private ActionBar             actionBar;
 
-    //UPDATED is a savedInstance key value
+    //UPDATED is a savedInstance key values
     private static final String UPDATED           = "updated";
     private boolean             hasUpdated        = false;
     private boolean             isLoggedIn        = false;
     private boolean             coursesRecovered  = false;
 
+    //used as a shared preference to see if the user has agreed to app conditions
+    private static final String AGREED_CONDITIONS_KEY = "com.scholarscraper.agreedConditions";
+
     private String              username;
     private String              password;
+
+
 
     public static final String  USER_FILE_NAME    = "userData";
     public static final String  COURSE_FILE_NAME  = "courses";
@@ -203,6 +211,15 @@ public class MainActivity
      */
     public void launchLoginDialog(String prompt)
     {
+        //check to see if the user has agreed to the apps conditions
+        final SharedPreferences preferences = this.getSharedPreferences("com.scholarscraper", Context.MODE_PRIVATE);
+        boolean hasAgreed = preferences.getBoolean(AGREED_CONDITIONS_KEY, false);
+        if (!hasAgreed) {
+            launchFirstTimeInfoDialog();
+            return;
+        }
+
+        //user has agreed to conditions, so we can let them log in
         FragmentTransaction transaction =
             getFragmentManager().beginTransaction();
         transaction.addToBackStack(null);
@@ -240,6 +257,42 @@ public class MainActivity
 
         DialogFragment fragment = new SettingsFragment();
         fragment.show(transaction, "settings");
+    }
+
+
+    private static String APP_INFO = "The Scholar Calendar App takes your Scholar " +
+    		"login information and stores it on the device. Never store sensitive " +
+    		"information on a rooted device. Bugs can pop up if Scholar " +
+    		"ever updates its web page structure, so do not rely on this app alone. " +
+    		"If a major bug is found, I'll do my best to send out a push notification " +
+    		"letting you know when it should be fixed.";
+    /**
+     * Launches the app info dialog, will be launched the first time the user starts
+     * the app. They have to agree and click yes in order to log in and use the app.
+     */
+    private void launchFirstTimeInfoDialog() {
+     final SharedPreferences preferences = this.getSharedPreferences("com.scholarscraper", Context.MODE_PRIVATE);
+     AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+     alertDialogBuilder.setTitle("Application Info");
+
+
+     alertDialogBuilder
+         .setMessage(APP_INFO)
+         .setCancelable(false)
+         .setPositiveButton("Agree", new DialogInterface.OnClickListener() {
+              public void onClick(DialogInterface dialog,int id) {
+                  preferences.edit().putBoolean(AGREED_CONDITIONS_KEY, true).commit();
+                  launchLoginDialog(UpdateFragment.DEFAULT_PROMPT);
+              }
+         })
+         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+              public void onClick(DialogInterface dialog,int id) {
+                 dialog.cancel();
+              }
+     });
+     AlertDialog alertDialog = alertDialogBuilder.create();
+     alertDialog.show();
     }
 
 
