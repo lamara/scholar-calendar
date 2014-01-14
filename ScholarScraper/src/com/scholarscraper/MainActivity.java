@@ -75,7 +75,7 @@ public class MainActivity
     public static final int UPDATE_INTERVAL = 6; //in hours
 
     //used to show the state of the list view
-    private static final String EMPTY_LIST_TEXT = "No outstanding assignments!";
+    private static final String EMPTY_LIST_TEXT = "No assignments due";
     private static final String LOG_IN_LIST_TEXT = "Please log in!";
     //used for action menu items
     private static final String LOG_IN = "Log in";
@@ -399,9 +399,11 @@ public class MainActivity
 
     private void populateListView()
     {
-        AssignmentAdapter adapter = new AssignmentAdapter(this, flattenCourseList(courses));
+        Listable[] tasks = flattenCourseList(courses);
+        AssignmentAdapter adapter = new AssignmentAdapter(this, tasks);
         if (adapter.isEmpty()) {
             showEmptyListView(EMPTY_LIST_TEXT);
+            return;
         }
         listView.setAdapter(adapter);
     }
