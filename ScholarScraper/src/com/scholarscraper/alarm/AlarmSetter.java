@@ -1,5 +1,6 @@
 package com.scholarscraper.alarm;
 
+import java.util.TimeZone;
 import java.util.Calendar;
 import android.content.SharedPreferences;
 import com.scholarscraper.SettingsFragment;
@@ -36,6 +37,8 @@ public class AlarmSetter
     public static final String DUE_DATE_EXTRA = "dueDate";
     public static final String ASSIGNMENT_NAME_EXTRA = "assignmentName";
     public static final String COURSE_NAME_EXTRA = "courseName";
+
+    private static final String TIME_ZONE = "America/New_York";
 
     public static void setNextAlarm(Context context) {
         List<Course> courses = DataManager.recoverCourses(context);
@@ -182,10 +185,9 @@ public class AlarmSetter
         long alarmTime = dueDate.getTimeInMillis() - offset;
 
         if (cancelNightAlarms) {
-            //with this modulus we will get a value from 0-23, subtracting 5 from
-            //the alarmTime to account for EST offset, this will probably be off by an
-            //hour once we hit daylight savings time. //TODO fix daylight savings issue
-            long alarmHourOfDay = ((alarmTime - 5 * 1000 * 3600) % (24 * 1000 * 3600)) / (1000 * 3600) ;
+            //with this modulus we will get a value from 0-23, subtracting the timezone offset
+            //from alarmTime to account for eastern time
+            long alarmHourOfDay = ((alarmTime + getTimeZoneOffset()) % (24 * 1000 * 3600)) / (1000 * 3600) ;
             if (alarmHourOfDay > SettingsFragment.LOW_CUTOFF) {
                 Calendar c = Calendar.getInstance();
                 c.setTimeInMillis(alarmTime);
@@ -203,6 +205,13 @@ public class AlarmSetter
             }
         }
         return alarmTime;
+    }
+
+    //returns the Eastern timezone offset from UTC in milliseconds;
+    private static long getTimeZoneOffset() {
+        TimeZone timeZone = TimeZone.getTimeZone(TIME_ZONE);
+        long offset = timeZone.getOffset(new Date().getTime());
+        return offset;
     }
 
     /**
