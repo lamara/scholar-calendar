@@ -140,94 +140,54 @@ public class ScholarScraper
     {
         System.out.println("Executing course retrieval");
         Document mainPage = Jsoup.parse(mainPageHtml);
-        String[] htmls = retrieveCourseHtmls(mainPage, semester);
-        List<Course> courses = new ArrayList<Course>();
-        for (String html : htmls)
-        {
-            courses.add(parseCourseHtml(html));
+
+        Element membershipElement = mainPage.select("a[id=addNewSiteLink]").first();
+        if (membershipElement == null) {
+             throw new ParseException("Failed to find membership url", 0);
+        }
+        String membershipUrl = membershipElement.attr("href");
+        return retrieveCoursesFromMembershipPage(membershipUrl, semester);
+    }
+
+    private List<Course> retrieveCoursesFromMembershipPage(String membershipPageUrl, String semester) throws IOException, ParseException
+    {
+        String membershipHtml = parseScholarPage(membershipPageUrl);
+        Document membershipDocument = Jsoup.parse(membershipHtml);
+        Element portletElement = membershipDocument.select("div[class*=title] > a").first();
+        if (portletElement == null) {
+            System.out.println("failed to find portlet element");
+            throw new ParseException("Failed to find membership portlet element", 0);
+        }
+        String portletUrl = portletElement.attr("href");
+        String portletHtml = parseScholarPage(portletUrl);
+        Document portletDocument = Jsoup.parse(portletHtml);
+        Elements courseElements = portletDocument.select("tr");
+
+        ArrayList<Course> courses = new ArrayList<Course>();
+        for (Element element : courseElements) {
+            Elements semesterElements = element.select("td[headers=term");
+            if (semesterElements.size() == 0) {
+                continue;
+            }
+            String courseSemester = semesterElements.first().text();
+            System.out.println(courseSemester);
+            if (!courseSemester.equals(semester)) {
+                //course isn't associated with the current semester so we drop it
+                continue;
+            }
+            Elements nameAndUrlElements = element.select("td[headers=title] > h4 > a");
+            if (nameAndUrlElements.size() == 0) {
+                continue;
+            }
+            String name = nameAndUrlElements.first().text();
+            String url = nameAndUrlElements.first().attr("href");
+            System.out.println(name);
+            System.out.println(url);
+            Course course = new Course(name, url);
+            courses.add(course);
         }
         return courses;
     }
-
-
-    /**
-     * Retrieves href information from the Scholar mainpage, giving the html
-     * lines for all course pages within a semester
-     *
-     * @return links to course pages underneath the current semester
-     * @throws IOException
-     */
-    private String[] retrieveCourseHtmls(Document mainPage, String semester)
-        throws IOException
-    {
-        Elements elements = mainPage.select("div#otherSitesCategorWrap");
-        ArrayList<String> htmlLines = new ArrayList<String>();
-
-        /*
-         * Scholar's HTML doesn't use a clear hierarchy in this case, so we
-         * can't use Jsoup's built in HTML parser to retrieve html lines
-         */
-        String html = elements.html();
-        StringReader reader = new StringReader(html);
-        BufferedReader bufferedReader = new BufferedReader(reader);
-        String line;
-        while ((line = bufferedReader.readLine()) != null)
-        {
-            //This is where the html scraping gets (really) messy. Most pages have a semester tag
-            //that seperates courses that belong to different semesters, however if it is a user's
-            //first semester then that identifier doesn't exist. If this is the case then we need
-            //different logic to get the user's course information.
-            if (line.contains("<h4>" + semester + "</h4>"))
-            {
-                bufferedReader.readLine(); // skips over one element that we don't want
-                while ((line = bufferedReader.readLine()).contains("<li>"))
-                {
-                    htmlLines.add(line);
-                }
-                break;
-            }
-        }
-        if (htmlLines.size() == 0) {
-            //Do another pass, trying to pick up course info from the nav bar
-            String pageHtml = mainPage.html(); //this time we are getting all of the page's html
-            bufferedReader = new BufferedReader(new StringReader(pageHtml));
-            while ((line = bufferedReader.readLine()) != null)
-            {
-                if (line.contains("<li class=\"nav-menu\">")) {
-                    htmlLines.add(line);
-                }
-            }
-        }
-        if (htmlLines.size() == 0) {
-            System.out.println("No course links found");
-        }
-        return htmlLines.toArray(new String[htmlLines.size()]);
-    }
-
-
-    /**
-     * Gets course info from a single line of course data from the main page
-     * HTML. Returns an error if there was an issue parsing course data.
-     * @throws ParseException
-     */
-    private Course parseCourseHtml(String html) throws ParseException
-    {
-        String className;
-        String rootUrl;
-        Document classDoc = Jsoup.parse(html);
-
-        Element classInfo = classDoc.select("a").first();
-        className = classInfo.text();
-        rootUrl = classInfo.attr("href");
-        if (className == null || rootUrl == null) {
-            throw new ParseException(
-                "Unable to parse course data from the following line of HTML:  "
-                    + html,
-                0);
-        }
-        return new Course(className, rootUrl);
-    }
-
 
     protected void retrieveTasks(List<Course> courses)
         throws IOException,
