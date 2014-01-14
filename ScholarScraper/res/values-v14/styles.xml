@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
     <style name="Theme" parent="android:style/Theme.Holo.Light">
         <item name="android:actionBarItemBackground">@drawable/selectable_background_scholaractionbar</item>
         <item name="android:popupMenuStyle">@style/PopupMenu.Scholaractionbar</item>
@@ -13,6 +13,7 @@
     </style>
 
     <style name="ActionBar.Solid.Scholaractionbar" parent="@android:style/Widget.Holo.Light.ActionBar.Solid">
+        <item name="android:displayOptions">showHome|useLogo</item>
         <item name="android:background">@drawable/ab_solid_scholaractionbar</item>
         <item name="android:backgroundStacked">@drawable/ab_stacked_solid_scholaractionbar</item>
         <item name="android:backgroundSplit">@drawable/ab_bottom_solid_scholaractionbar</item>
@@ -20,6 +21,7 @@
     </style>
 
     <style name="ActionBar.Transparent.Scholaractionbar" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:displayOptions">showHome|useLogo</item>
         <item name="android:background">@drawable/ab_transparent_scholaractionbar</item>
         <item name="android:progressBarStyle">@style/ProgressBar.Scholaractionbar</item>
     </style>

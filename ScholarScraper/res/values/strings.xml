@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">ScholarScraper</string>
+    <string name="app_name">Scholar Calendar</string>
     <string name="menu_settings">Settings</string>
     <string name="pref_notification_delay">Delay</string>
     <string name="summary_list_preference">Hours</string>
